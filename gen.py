@@ -197,146 +197,6 @@ L_HEEL_POS = sub3(L_ANKLE_POS, (0.0, 0.0, HEEL_LEN))
 R_TOES_POS = add3(R_ANKLE_POS, (0.0, 0.0, FOOT_LEN))
 L_TOES_POS = add3(L_ANKLE_POS, (0.0, 0.0, FOOT_LEN))
 
-class SimpleMan():
-    def __init__(self, world, space, density, offset = (0.0, 0.0, 0.0)):
-        """Creates a ragdoll of standard size at the given offset."""
-
-        self.world = world
-        self.space = space
-        self.density = density
-        self.bodies = []
-        self.geoms = []
-        self.joints = []
-        self.totalMass = 0.0
-
-        self.offset = offset
-        mult = 3
-        self.chest = self.addBody((-CHEST_W * 0.5, CHEST_H, 0.0),
-            (CHEST_W * 0.5, CHEST_H, 0.0), 0.13)
-        self.belly = self.addBody((0.0, CHEST_H - 0.1, 0.0),
-            (0.0, HIP_H + 0.1, 0.0), 0.125)
-        self.midSpine = self.addFixedJoint(self.chest, self.belly)
-
-    def addFixedJoint(self, body1, body2):
-        joint = ode.FixedJoint(self.world)
-        joint.attach(body1, body2)
-        joint.setFixed()
-
-        joint.style = "fixed"
-        self.joints.append(joint)
-
-        return joint
-
-    def addBody(self, p1, p2, radius):
-        """
-        Adds a capsule body between joint positions p1 and p2 and with given
-        radius to the ragdoll.
-        """
-
-        p1 = add3(p1, self.offset)
-        p2 = add3(p2, self.offset)
-
-        # cylinder length not including endcaps, make capsules overlap by half
-        #   radius at joints
-        cyllen = dist3(p1, p2) - radius
-
-        body = ode.Body(self.world)
-        m = ode.Mass()
-        m.setCylinder(self.density, 3, radius, cyllen)
-        body.setMass(m)
-
-        # set parameters for drawing the body
-        body.shape = "capsule"
-        body.length = cyllen
-        body.radius = radius
-
-        # create a capsule geom for collision detection
-        geom = ode.GeomCCylinder(self.space, radius, cyllen)
-        geom.setBody(body)
-
-        # define body rotation automatically from body axis
-        za = norm3(sub3(p2, p1))
-        if (abs(dot3(za, (1.0, 0.0, 0.0))) < 0.7): xa = (1.0, 0.0, 0.0)
-        else: xa = (0.0, 1.0, 0.0)
-        ya = cross(za, xa)
-        xa = norm3(cross(ya, za))
-        ya = cross(za, xa)
-        rot = (xa[0], ya[0], za[0], xa[1], ya[1], za[1], xa[2], ya[2], za[2])
-
-        body.setPosition(mul3(add3(p1, p2), 0.5))
-        body.setRotation(rot)
-
-        self.bodies.append(body)
-        self.geoms.append(geom)
-
-        self.totalMass += body.getMass().mass
-
-        return body
-
-    def update(self):
-        #print self.bodies[0].getRotation()
-        global ii
-        ii+=1
-        if ii>100:
-            pass
-        #self.bodies[0].addTorque((00,0,00))
-        body_axis = rotate3(self.bodies[0].getRotation(), (0,0,1))
-        torq_axis = cross((0,1,0),body_axis)
-        self.bodies[0].addTorque(mul3(norm3(torq_axis),50*math.acos(body_axis[2])))
-        #print body_axis, torq_axis, self.bodies[0].getPosition()
-
-        for j in self.joints:
-            if j.style == "ball":
-                # determine base and current attached body axes
-                baseAxis = rotate3(j.getBody(0).getRotation(), j.baseAxis)
-                currAxis = zaxis(j.getBody(1).getRotation())
-
-                # get angular velocity of attached body relative to fixed body
-                relAngVel = sub3(j.getBody(1).getAngularVel(),
-                    j.getBody(0).getAngularVel())
-                twistAngVel = project3(relAngVel, currAxis)
-                flexAngVel = sub3(relAngVel, twistAngVel)
-
-                # restrict limbs rotating too far from base axis
-                angle = acosdot3(currAxis, baseAxis)
-                if angle > j.flexLimit:
-                    # add torque to push body back towards base axis
-                    j.getBody(1).addTorque(mul3(
-                        norm3(cross(currAxis, baseAxis)),
-                        (angle - j.flexLimit) * j.flexForce))
-
-                    # dampen flex to prevent bounceback
-                    j.getBody(1).addTorque(mul3(flexAngVel,
-                        -0.01 * j.flexForce))
-
-                # determine the base twist up vector for the current attached
-                #   body by applying the current joint flex to the fixed body's
-                #   base twist up vector
-                baseTwistUp = rotate3(j.getBody(0).getRotation(), j.baseTwistUp)
-                base2current = calcRotMatrix(norm3(cross(baseAxis, currAxis)),
-                    acosdot3(baseAxis, currAxis))
-                projBaseTwistUp = rotate3(base2current, baseTwistUp)
-
-                # determine the current twist up vector from the attached body
-                actualTwistUp = rotate3(j.getBody(1).getRotation(),
-                    j.baseTwistUp2)
-
-                # restrict limbs twisting
-                angle = acosdot3(actualTwistUp, projBaseTwistUp)
-                if angle > j.twistLimit:
-                    # add torque to rotate body back towards base angle
-                    j.getBody(1).addTorque(mul3(
-                        norm3(cross(actualTwistUp, projBaseTwistUp)),
-                        (angle - j.twistLimit) * j.twistForce))
-
-                    # dampen twisting
-                    j.getBody(1).addTorque(mul3(twistAngVel,
-                        -0.01 * j.twistForce))
-
-
-
-
-
 class RagDoll():
     def __init__(self, world, space, density, offset = (0.0, 0.0, 0.0)):
         """Creates a ragdoll of standard size at the given offset."""
@@ -428,6 +288,7 @@ class RagDoll():
         cyllen = dist3(p1, p2) - radius
 
         body = ode.Body(self.world)
+        body.tag = 'ragdoll'
         m = ode.Mass()
         m.setCylinder(self.density, 3, radius, cyllen)
         body.setMass(m)
@@ -542,24 +403,26 @@ class RagDoll():
 
         return joint
 
-    def stabilise(self,body):
+    def stabilise(self,body,strength=500):
         body_axis = rotate3(body.getRotation(), (0,0,1))
         torq_axis = cross((0,1,0),body_axis)
         ang = math.acos(body_axis[2])
-        body.addTorque(mul3(norm3(torq_axis),500*ang))
+        body.addTorque(mul3(norm3(torq_axis),strength*ang))
 
 
     def update(self):
-        body_axis = rotate3(self.bodies[1].getRotation(), (0,0,1))
-        torq_axis = cross((0,1,0),body_axis)
-        ang = math.acos(body_axis[2])
-        self.bodies[1].addTorque(mul3(norm3(torq_axis),500*ang))
-
-        self.stabilise(self.bodies[1])
-        self.stabilise(self.leftUpperLeg)
-        self.stabilise(self.leftLowerLeg)
-        self.stabilise(self.rightUpperLeg)
-        self.stabilise(self.rightLowerLeg)
+        #body_axis = rotate3(self.bodies[1].getRotation(), (0,0,1))
+        #torq_axis = cross((0,1,0),body_axis)
+        #ang = math.acos(body_axis[2])
+        #self.bodies[1].addTorque(mul3(norm3(torq_axis),500*ang))
+        torso_str = 100
+        upper_leg_str = 300
+        lower_leg_str = 50
+        self.stabilise(self.bodies[1],torso_str)
+        self.stabilise(self.leftUpperLeg,upper_leg_str)
+        self.stabilise(self.leftLowerLeg,lower_leg_str)
+        self.stabilise(self.rightUpperLeg,upper_leg_str)
+        self.stabilise(self.rightLowerLeg,lower_leg_str)
 
         THRESH = 0
         ANG_THRESH = 0
@@ -621,7 +484,7 @@ class RagDoll():
                         -0.01 * j.twistForce))
 
 
-def createCapsule(world, space, density, length, radius):
+def createCapsule(world, space, density, length, radius,tag='def'):
     """Creates a capsule body and corresponding geom."""
 
     # create capsule body (aligned along the z-axis so that it matches the
@@ -636,6 +499,7 @@ def createCapsule(world, space, density, length, radius):
     body.shape = "capsule"
     body.length = length
     body.radius = radius
+    body.tag = tag
 
     # create a capsule geom for collision detection
     geom = ode.GeomCCylinder(space, radius, length)
@@ -664,6 +528,13 @@ def near_callback(args, geom1, geom2):
         c.setMu(5000) # 0-5 = very slippery, 50-500 = normal, 5000 = very sticky
         j = ode.ContactJoint(world, contactgroup, c)
         j.attach(geom1.getBody(), geom2.getBody())
+    b1= geom1.getBody()
+    b2= geom2.getBody()
+    #if b1:
+        #print b1.tag
+    #if b2:
+        #print b2.tag
+    #print '----'
 
 def prepare_GL():
     """Setup basic OpenGL rendering with smooth shading and a single light."""
@@ -740,13 +611,16 @@ def onKey(c, x, y):
         sys.exit(0)
     elif c == 'b':
         obstacle, obsgeom = createCapsule(world, space, 1000, 0.05, 0.15)
-        pos = (random.uniform(-0.3, 0.3), 2, random.uniform(-0.15, 0.2))
-        pos = ragdoll.chest.getPosition()
-        pos = (pos[0],4,pos[2])
+        obstacle.tag = 'dropped'
+        diff = (random.uniform(-1, 1), 0, random.uniform(-1, 1))
+        target = ragdoll.chest.getPosition()
+        pos = add3(target,diff)
 #pos = (0.27396178783269359, 0.20000000000000001, 0.17531818795388002)
         obstacle.setPosition(pos)
+        obstacle.setLinearVel(mul3(diff,-50))
         obstacle.setRotation(rightRot)
         bodies.append(obstacle)
+        geoms.append(obsgeom)
         print "obstacle created at %s" % (str(pos))
 
 
@@ -823,6 +697,8 @@ floor = ode.GeomPlane(space, (0, 1, 0), 0)
 # create a list to store any ODE bodies which are not part of the ragdoll (this
 #   is needed to avoid Python garbage collecting these bodies)
 bodies = []
+
+geoms = []
 
 # create a joint group for the contact joints generated during collisions
 #   between two bodies collide
