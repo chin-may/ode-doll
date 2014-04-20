@@ -553,7 +553,7 @@ def near_callback(args, geom1, geom2):
     world, contactgroup = args
     for c in contacts:
         c.setBounce(0.2)
-        c.setMu(50000) # 0-5 = very slippery, 50-500 = normal, 5000 = very sticky
+        c.setMu(500) # 0-5 = very slippery, 50-500 = normal, 5000 = very sticky
         j = ode.ContactJoint(world, contactgroup, c)
         j.attach(geom1.getBody(), geom2.getBody())
     b1= geom1.getBody()
@@ -598,6 +598,33 @@ def prepare_GL():
 
 CAPSULE_SLICES = 16
 CAPSULE_STACKS = 12
+
+def draw_floor():
+#    glColor3f(.3,.3,.3)
+#    glBegin(GL_QUADS)
+#    glVertex3f( 0,-0.001, 0)
+#    glVertex3f( 0,-0.001,10)
+#    glVertex3f(10,-0.001,10)
+#    glVertex3f(10,-0.001, 0)
+#    glEnd()
+
+    glBegin(GL_LINES)
+    for j in xrange(100):
+        i = j/5.0
+        if i==0:
+            glColor3f(.6,.3,.3)
+        else:
+            glColor3f(.25,.25,.25)
+        glVertex3f(i-10,0,-10)
+        glVertex3f(i-10,0,20-10)
+        if i==0:
+            glColor3f(.3,.3,.6)
+        else:
+            glColor3f(.25,.25,.25)
+        glVertex3f(-10,0,i-10)
+        glVertex3f(20-10,0,i-10)
+    glEnd()
+    glColor3f(0.8, 0.8, 0.8)
 
 def draw_body(body):
     """Draw an ODE body."""
@@ -662,6 +689,7 @@ def onDraw():
 
     prepare_GL()
 
+    draw_floor()
     for b in bodies:
         draw_body(b)
     for b in ragdoll.bodies:
