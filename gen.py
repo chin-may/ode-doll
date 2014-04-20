@@ -268,6 +268,7 @@ class RagDoll():
             self.leftForeArm, L_ELBOW_POS, upAxis, 0.0, 0.6 * pi)
 
         self.rightHand = self.addBody(R_WRIST_POS, R_FINGERS_POS, 0.075)
+        self.rightHand.moving = False
         self.rightWrist = self.addHingeJoint(self.rightForeArm,
             self.rightHand, R_WRIST_POS, fwdAxis, -0.1 * pi, 0.2 * pi)
         self.leftHand = self.addBody(L_WRIST_POS, L_FINGERS_POS, 0.075)
@@ -409,14 +410,32 @@ class RagDoll():
         ang = math.acos(body_axis[2])
         body.addTorque(mul3(norm3(torq_axis),strength*ang))
 
+    def straighten(self,elbow):
+        b1 = elbow.getBody(0)
+        b2 = elbow.getBody(1)
+        b1_axis = rotate3(b1.getRotation(), (0,0,1))
+        b2_axis = rotate3(b2.getRotation(), (0,0,1))
+        torq_axis = norm3(cross(b2_axis,b1_axis))
+        ang = acosdot3(b1_axis, b2_axis)
+        b1.addTorque(mul3(torq_axis, -10*ang))
+        b2.addTorque(mul3(torq_axis, 10*ang))
+
+    def moveto(self,bodypart,location):
+        pos = bodypart.getPosition()
+        diff = sub3(location,pos)
+        if len3(diff) < 0.1:
+            bodypart.moving = False
+        else:
+            bodypart.addForce(mul3(diff,700))
+
 
     def update(self):
         #body_axis = rotate3(self.bodies[1].getRotation(), (0,0,1))
         #torq_axis = cross((0,1,0),body_axis)
         #ang = math.acos(body_axis[2])
         #self.bodies[1].addTorque(mul3(norm3(torq_axis),500*ang))
-        torso_str = 100
-        upper_leg_str = 300
+        torso_str = 200
+        upper_leg_str = 100
         lower_leg_str = 50
         self.stabilise(self.bodies[1],torso_str)
         self.stabilise(self.leftUpperLeg,upper_leg_str)
@@ -424,7 +443,16 @@ class RagDoll():
         self.stabilise(self.rightUpperLeg,upper_leg_str)
         self.stabilise(self.rightLowerLeg,lower_leg_str)
 
-        THRESH = 0
+        self.stabilise(self.leftUpperArm,10)
+        self.stabilise(self.rightUpperArm,10)
+
+        self.straighten(self.leftElbow)
+        self.straighten(self.rightElbow)
+
+        if self.rightHand.moving:
+            self.moveto(self.rightHand,self.rightHand.destination)
+
+        THRESH = 0.0
         ANG_THRESH = 0
 
         flexAngVel = self.bodies[1].getAngularVel();
@@ -525,7 +553,7 @@ def near_callback(args, geom1, geom2):
     world, contactgroup = args
     for c in contacts:
         c.setBounce(0.2)
-        c.setMu(5000) # 0-5 = very slippery, 50-500 = normal, 5000 = very sticky
+        c.setMu(50000) # 0-5 = very slippery, 50-500 = normal, 5000 = very sticky
         j = ode.ContactJoint(world, contactgroup, c)
         j.attach(geom1.getBody(), geom2.getBody())
     b1= geom1.getBody()
@@ -622,6 +650,10 @@ def onKey(c, x, y):
         bodies.append(obstacle)
         geoms.append(obsgeom)
         print "obstacle created at %s" % (str(pos))
+    elif c == 'm':
+        cpos = ragdoll.chest.getPosition()
+        ragdoll.rightHand.destination = (cpos[0]+0.6,cpos[1]+0.2,cpos[2]+0.1)
+        ragdoll.rightHand.moving = True
 
 
 
