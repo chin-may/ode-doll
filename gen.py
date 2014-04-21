@@ -428,15 +428,36 @@ class RagDoll():
         else:
             bodypart.addForce(mul3(diff,700))
 
+    def getUpAxis(self):
+        ppos = ragdoll.pelvis.getPosition()
+        bellypos = ragdoll.belly.getPosition()
+        up_axis = norm3(sub3(bellypos,ppos))
+        return up_axis
+
+    def getRightAxis(self):
+        ppos = ragdoll.pelvis.getPosition()
+        rulpos = ragdoll.rightUpperLeg.getPosition()
+        lulpos = ragdoll.leftUpperLeg.getPosition()
+        lul_pel = sub3(ppos,lulpos)
+        pel_rul = sub3(rulpos,ppos)
+        right_axis = norm3(add3(lul_pel,pel_rul))
+        return right_axis
+
+    def getForwardAxis(self):
+        right_axis = self.getRightAxis()
+        up_axis = self.getUpAxis()
+        front_axis = cross(up_axis,right_axis)
+        return front_axis
+
 
     def update(self):
         #body_axis = rotate3(self.bodies[1].getRotation(), (0,0,1))
         #torq_axis = cross((0,1,0),body_axis)
         #ang = math.acos(body_axis[2])
         #self.bodies[1].addTorque(mul3(norm3(torq_axis),500*ang))
-        torso_str = 200
-        upper_leg_str = 100
-        lower_leg_str = 50
+        torso_str = 150
+        upper_leg_str = 50
+        lower_leg_str = 100
         self.stabilise(self.bodies[1],torso_str)
         self.stabilise(self.leftUpperLeg,upper_leg_str)
         self.stabilise(self.leftLowerLeg,lower_leg_str)
@@ -451,6 +472,9 @@ class RagDoll():
 
         if self.rightHand.moving:
             self.moveto(self.rightHand,self.rightHand.destination)
+
+        if walking == 1:
+            pass
 
         THRESH = 0.0
         ANG_THRESH = 0
@@ -591,7 +615,7 @@ def prepare_GL():
     glEnable(GL_COLOR_MATERIAL)
     glColor3f(0.8, 0.8, 0.8)
 
-    gluLookAt(1.5, 4.0, 3.0, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0)
+    gluLookAt(1.5, 3.0, 3.0, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0)
 
 
 # polygon resolution for capsule bodies
@@ -677,10 +701,24 @@ def onKey(c, x, y):
         bodies.append(obstacle)
         geoms.append(obsgeom)
         print "obstacle created at %s" % (str(pos))
+#    elif c == 'm':
+#        cpos = ragdoll.chest.getPosition()
+#        ragdoll.rightHand.destination = (cpos[0]+0.6,cpos[1]+0.2,cpos[2]+0.1)
+#        ragdoll.rightHand.moving = True
     elif c == 'm':
-        cpos = ragdoll.chest.getPosition()
-        ragdoll.rightHand.destination = (cpos[0]+0.6,cpos[1]+0.2,cpos[2]+0.1)
+        # Set Pelvis as origin
+        ppos = ragdoll.pelvis.getPosition()
+        up = ragdoll.getUpAxis()
+        right = ragdoll.getRightAxis()
+        forward = ragdoll.getForwardAxis()
+        dest = reduce(add3,[mul3(up,0.5),mul3(right,0.5),mul3(forward,0.5),ppos])
+        ######
+        ragdoll.rightHand.destination = dest
+        print "Rel Pos - "+str(sub3(ragdoll.rightHand.destination,ppos))
         ragdoll.rightHand.moving = True
+
+    elif c == 'W':
+        walking = 1
 
 
 
@@ -694,6 +732,12 @@ def onDraw():
         draw_body(b)
     for b in ragdoll.bodies:
         draw_body(b)
+    if ragdoll.rightHand.moving:
+        dst = ragdoll.rightHand.destination
+        glTranslated(dst[0],dst[1],dst[2]);
+        color = [0.5,0.8,0.1]
+        glMaterialfv(GL_FRONT,GL_DIFFUSE,color)
+        glutSolidSphere(0.1,10,10)
 
     glutSwapBuffers()
 
@@ -791,6 +835,10 @@ print "obstacle created at %s" % (str(pos))
 glutKeyboardFunc(onKey)
 glutDisplayFunc(onDraw)
 glutIdleFunc(onIdle)
+
+#walking state global
+walking = 0
+
 
 # enter the GLUT event loop
 glutMainLoop()
