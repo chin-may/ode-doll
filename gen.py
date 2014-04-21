@@ -208,7 +208,10 @@ class RagDoll():
         self.geoms = []
         self.joints = []
         self.totalMass = 0.0
-
+        self.walking = 0
+        self.walk_time_steps = 100
+        self.walking_force = 100
+        self.walk_time_counter = 0
         self.offset = offset
 
         self.chest = self.addBody((-CHEST_W * 0.5, CHEST_H, 0.0),
@@ -241,7 +244,15 @@ class RagDoll():
         self.leftLowerLeg = self.addBody(L_KNEE_POS, L_ANKLE_POS, 0.09)
         self.leftKnee = self.addHingeJoint(self.leftUpperLeg,
             self.leftLowerLeg, L_KNEE_POS, leftAxis, 0.0, pi * 0.75)
-
+            
+        self.rightUpperLeg.stabilize = True
+        self.rightLowerLeg.stabilize = True
+        self.rightUpperLeg.tilt = False
+        self.rightLowerLeg.tilt = False
+        self.leftUpperLeg.stabilize = True
+        self.leftLowerLeg.stabilize = True
+        self.leftUpperLeg.tilt = False
+        self.leftLowerLeg.tilt = False
         #self.rightFoot = self.addBody(R_HEEL_POS, R_TOES_POS, 0.09)
         #self.rightAnkle = self.addHingeJoint(self.rightLowerLeg,
             #self.rightFoot, R_ANKLE_POS, rightAxis, -0.1 * pi, 0.05 * pi)
@@ -409,6 +420,12 @@ class RagDoll():
         torq_axis = cross((0,1,0),body_axis)
         ang = math.acos(body_axis[2])
         body.addTorque(mul3(norm3(torq_axis),strength*ang))
+    
+    def tilt(self,axis,body,strength=500):
+        body_axis = rotate3(body.getRotation(), (0,0,1))
+        torq_axis = cross(axis,body_axis)
+        ang = math.acos(body_axis[2])
+        body.addTorque(mul3(norm3(torq_axis),strength*ang))
 
     def straighten(self,elbow):
         b1 = elbow.getBody(0)
@@ -426,7 +443,7 @@ class RagDoll():
         if len3(diff) < 0.1:
             bodypart.moving = False
         else:
-            bodypart.addForce(mul3(diff,700))
+            bodypart.addForce(mul3(diff,200))
 
     def getUpAxis(self):
         ppos = ragdoll.pelvis.getPosition()
@@ -448,6 +465,38 @@ class RagDoll():
         up_axis = self.getUpAxis()
         front_axis = cross(up_axis,right_axis)
         return front_axis
+        
+    def walk(self):
+        print "State - "+str(self.walk_state)
+        if self.walk_state==1:
+            onKey('X',0,0)
+            self.walk_state=2
+            self.walk_time_steps = 100
+        
+        elif self.walk_state==2:
+            onKey('s',0,0)
+            self.walk_state=3
+            self.walk_time_steps = 100
+        
+        elif self.walk_state==3:
+            onKey('T',0,0)
+            self.walk_state=4
+            self.walk_time_steps = 400
+        
+        elif self.walk_state==4:
+            onKey('x',0,0)
+            self.walk_state=5
+            self.walk_time_steps = 100
+        
+        elif self.walk_state==5:
+            onKey('S',0,0)
+            self.walk_state=6
+            self.walk_time_steps = 100
+        
+        elif self.walk_state==6:
+            onKey('t',0,0)
+            self.walk_state=1
+            self.walk_time_steps = 400
 
 
     def update(self):
@@ -459,10 +508,26 @@ class RagDoll():
         upper_leg_str = 50
         lower_leg_str = 100
         self.stabilise(self.bodies[1],torso_str)
-        self.stabilise(self.leftUpperLeg,upper_leg_str)
-        self.stabilise(self.leftLowerLeg,lower_leg_str)
-        self.stabilise(self.rightUpperLeg,upper_leg_str)
-        self.stabilise(self.rightLowerLeg,lower_leg_str)
+
+        if self.leftUpperLeg.stabilize:
+            self.stabilise(self.leftUpperLeg,upper_leg_str)
+        if self.leftLowerLeg.stabilize:
+            self.stabilise(self.leftLowerLeg,lower_leg_str)
+
+        if self.leftUpperLeg.tilt:
+            self.tilt(self.leftUpperLeg.tilt_direction,self.leftUpperLeg,upper_leg_str)
+        if self.leftLowerLeg.tilt:
+            self.tilt(self.leftLowerLeg.tilt_direction,self.leftLowerLeg,lower_leg_str)
+        
+        if self.rightUpperLeg.stabilize:
+            self.stabilise(self.rightUpperLeg,upper_leg_str)
+        if self.rightLowerLeg.stabilize:
+            self.stabilise(self.rightLowerLeg,lower_leg_str)
+
+        if self.rightUpperLeg.tilt:
+            self.tilt(self.rightUpperLeg.tilt_direction,self.rightUpperLeg,upper_leg_str)
+        if self.rightLowerLeg.tilt:
+            self.tilt(self.rightLowerLeg.tilt_direction,self.rightLowerLeg,lower_leg_str)
 
         self.stabilise(self.leftUpperArm,10)
         self.stabilise(self.rightUpperArm,10)
@@ -473,8 +538,13 @@ class RagDoll():
         if self.rightHand.moving:
             self.moveto(self.rightHand,self.rightHand.destination)
 
-        if walking == 1:
-            pass
+        if self.walking == 1:
+            if self.walk_time_counter==self.walk_time_steps:
+                self.walk()
+                self.walk_time_counter = 0
+            self.walk_time_counter+=1
+            forward = self.getForwardAxis()
+            self.bodies[1].addForce(mul3(forward,self.walking_force))
 
         THRESH = 0.0
         ANG_THRESH = 0
@@ -717,9 +787,57 @@ def onKey(c, x, y):
         print "Rel Pos - "+str(sub3(ragdoll.rightHand.destination,ppos))
         ragdoll.rightHand.moving = True
 
-    elif c == 'W':
-        walking = 1
+    elif c == 'x':
+        # Remove Stabilizing force from right leg
+        ragdoll.rightUpperLeg.stabilize = False
+        ragdoll.rightLowerLeg.stabilize = False
+        ragdoll.rightUpperLeg.tilt = False
+        ragdoll.rightLowerLeg.tilt = False
+        
+    elif c == 'X':
+        # Remove Stabilizing force from right leg
+        ragdoll.leftUpperLeg.stabilize = False
+        ragdoll.leftLowerLeg.stabilize = False
+        ragdoll.leftUpperLeg.tilt = False
+        ragdoll.leftLowerLeg.tilt = False
+        
+    elif c == 's':
+        ragdoll.rightUpperLeg.stabilize = True
+        ragdoll.rightLowerLeg.stabilize = True
+    elif c == 'S':
+        ragdoll.leftUpperLeg.stabilize = True
+        ragdoll.leftLowerLeg.stabilize = True
+    
+    elif c == 't':
+        ragdoll.rightUpperLeg.tilt = True
+        up = ragdoll.getUpAxis()
+        right = ragdoll.getRightAxis()
+        forward = ragdoll.getForwardAxis()
+        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-1)])
+        ragdoll.rightUpperLeg.tilt_direction = axis
+        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,-1)])
+        ragdoll.rightLowerLeg.tilt_direction = axis
 
+    elif c == 'T':
+        ragdoll.leftUpperLeg.tilt = True
+        up = ragdoll.getUpAxis()
+        right = ragdoll.getRightAxis()
+        forward = ragdoll.getForwardAxis()
+        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-1)])
+        ragdoll.leftUpperLeg.tilt_direction = axis
+        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,-1)])
+        ragdoll.leftLowerLeg.tilt_direction = axis
+
+    elif c == 'W':
+        ragdoll.walking = 1
+        ragdoll.walk_state=1
+        print "Ragdoll Started Walking"
+    elif c == 'Z':
+        ragdoll.walking = 0
+        ragdoll.walk_state=1        
+        print "Ragdoll Stopped Walking"
+        onKey('S',0,0)
+        onKey('s',0,0)
 
 
 def onDraw():
