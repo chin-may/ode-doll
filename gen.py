@@ -471,32 +471,32 @@ class RagDoll():
         if self.walk_state==1:
             onKey('X',0,0)
             self.walk_state=2
-            self.walk_time_steps = 100
+            self.walk_time_steps = 200
         
         elif self.walk_state==2:
             onKey('s',0,0)
             self.walk_state=3
-            self.walk_time_steps = 100
+            self.walk_time_steps = 200
         
         elif self.walk_state==3:
             onKey('T',0,0)
             self.walk_state=4
-            self.walk_time_steps = 400
+            self.walk_time_steps = 300
         
         elif self.walk_state==4:
             onKey('x',0,0)
             self.walk_state=5
-            self.walk_time_steps = 100
+            self.walk_time_steps = 200
         
         elif self.walk_state==5:
             onKey('S',0,0)
             self.walk_state=6
-            self.walk_time_steps = 100
+            self.walk_time_steps = 200
         
         elif self.walk_state==6:
             onKey('t',0,0)
             self.walk_state=1
-            self.walk_time_steps = 400
+            self.walk_time_steps = 300
 
 
     def update(self):
@@ -810,22 +810,24 @@ def onKey(c, x, y):
     
     elif c == 't':
         ragdoll.rightUpperLeg.tilt = True
+        ragdoll.rightLowerLeg.tilt = True
         up = ragdoll.getUpAxis()
         right = ragdoll.getRightAxis()
         forward = ragdoll.getForwardAxis()
-        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-1)])
+        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-2)])
         ragdoll.rightUpperLeg.tilt_direction = axis
-        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,-1)])
+        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,0)])
         ragdoll.rightLowerLeg.tilt_direction = axis
 
     elif c == 'T':
         ragdoll.leftUpperLeg.tilt = True
+        ragdoll.leftLowerLeg.tilt = True
         up = ragdoll.getUpAxis()
         right = ragdoll.getRightAxis()
         forward = ragdoll.getForwardAxis()
-        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-1)])
+        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-2)])
         ragdoll.leftUpperLeg.tilt_direction = axis
-        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,-1)])
+        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,0)])
         ragdoll.leftLowerLeg.tilt_direction = axis
 
     elif c == 'W':
