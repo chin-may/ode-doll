@@ -210,7 +210,7 @@ class RagDoll():
         self.totalMass = 0.0
         self.walking = 0
         self.walk_time_steps = 100
-        self.walking_force = 100
+        self.walking_force = 130
         self.walk_time_counter = 0
         self.offset = offset
 
@@ -289,6 +289,9 @@ class RagDoll():
         self.leftForeArm.tilt = False
         self.rightUpperArm.tilt = False
         self.rightForeArm.tilt = False
+        self.belly.righttilt = False
+        self.belly.lefttilt = False
+
 
     def addBody(self, p1, p2, radius):
         """
@@ -541,9 +544,11 @@ class RagDoll():
             self.stabilise(self.leftLowerLeg,lower_leg_str)
 
         if self.leftUpperLeg.tilt:
-            self.tilt(self.leftUpperLeg.tilt_direction,self.leftUpperLeg,upper_leg_str)
+#            self.tilt(self.leftUpperLeg.tilt_direction,self.leftUpperLeg,upper_leg_str)
+            self.smooth_tilt(self.leftUpperLeg,10,20)
         if self.leftLowerLeg.tilt:
-            self.tilt(self.leftLowerLeg.tilt_direction,self.leftLowerLeg,lower_leg_str)
+#            self.tilt(self.leftLowerLeg.tilt_direction,self.leftLowerLeg,lower_leg_str)
+            self.smooth_tilt(self.leftLowerLeg,10,30)
         
         if self.rightUpperLeg.stabilize:
             self.stabilise(self.rightUpperLeg,upper_leg_str)
@@ -551,17 +556,25 @@ class RagDoll():
             self.stabilise(self.rightLowerLeg,lower_leg_str)
 
         if self.rightUpperLeg.tilt:
-            self.tilt(self.rightUpperLeg.tilt_direction,self.rightUpperLeg,upper_leg_str)
+#            self.tilt(self.rightUpperLeg.tilt_direction,self.rightUpperLeg,upper_leg_str)
+            self.smooth_tilt(self.rightUpperLeg,10,20)
         if self.rightLowerLeg.tilt:
-            self.tilt(self.rightLowerLeg.tilt_direction,self.rightLowerLeg,lower_leg_str)
+#            self.tilt(self.rightLowerLeg.tilt_direction,self.rightLowerLeg,lower_leg_str)
+            self.smooth_tilt(self.rightLowerLeg,10,30)
             
+        if self.belly.lefttilt:
+            self.belly.addTorque(mul3(self.getForwardAxis(),-100))
+        if self.belly.righttilt:
+            self.belly.addTorque(mul3(self.getForwardAxis(),100))
         #############
         # Arms
         ################
         if self.leftUpperArm.tilt:
-            self.tilt(self.leftUpperArm.tilt_direction,self.leftUpperArm,20)
+#            self.tilt(self.leftUpperArm.tilt_direction,self.leftUpperArm,20)
+            self.smooth_tilt(self.leftUpperArm,10000,10)
         if self.leftForeArm.tilt:
-            self.tilt(self.leftForeArm.tilt_direction,self.leftForeArm,40)
+#            self.tilt(self.leftForeArm.tilt_direction,self.leftForeArm,40)
+            self.smooth_tilt(self.leftForeArm,10000,10)
         if self.rightUpperArm.tilt:
             #self.tilt(self.rightUpperArm.tilt_direction,self.rightUpperArm,self.rightUpperArm.tilt_str)
             self.smooth_tilt(self.rightUpperArm,10000,10)
@@ -724,7 +737,7 @@ def prepare_GL():
     glEnable(GL_COLOR_MATERIAL)
     glColor3f(0.8, 0.8, 0.8)
 
-    gluLookAt(1.5, 3.0, 3.0, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0)
+    gluLookAt(2.5, 7.0, 7.0, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0)
 
 
 # polygon resolution for capsule bodies
@@ -832,6 +845,7 @@ def onKey(c, x, y):
         ragdoll.rightLowerLeg.stabilize = False
         ragdoll.rightUpperLeg.tilt = False
         ragdoll.rightLowerLeg.tilt = False
+        ragdoll.belly.lefttilt = True
         
     elif c == 'X':
         # Remove Stabilizing force from right leg
@@ -839,13 +853,16 @@ def onKey(c, x, y):
         ragdoll.leftLowerLeg.stabilize = False
         ragdoll.leftUpperLeg.tilt = False
         ragdoll.leftLowerLeg.tilt = False
+        ragdoll.belly.righttilt = True
         
     elif c == 's':
         ragdoll.rightUpperLeg.stabilize = True
         ragdoll.rightLowerLeg.stabilize = True
+        ragdoll.belly.lefttilt = False
     elif c == 'S':
         ragdoll.leftUpperLeg.stabilize = True
         ragdoll.leftLowerLeg.stabilize = True
+        ragdoll.belly.righttilt = False
     
     elif c == 't':
         ragdoll.rightUpperLeg.tilt = True
@@ -855,8 +872,10 @@ def onKey(c, x, y):
         forward = ragdoll.getForwardAxis()
         axis = reduce(add3,[mul3(up,-3),mul3(right,0),mul3(forward,1.75)])
         ragdoll.rightUpperLeg.tilt_direction = axis
+        ragdoll.rightUpperLeg.final_tilt_direction = axis
         axis = reduce(add3,[mul3(up,-2),mul3(right,0),mul3(forward,0)])
         ragdoll.rightLowerLeg.tilt_direction = axis
+        ragdoll.rightLowerLeg.final_tilt_direction = axis
 
     elif c == 'T':
         ragdoll.leftUpperLeg.tilt = True
@@ -866,8 +885,10 @@ def onKey(c, x, y):
         forward = ragdoll.getForwardAxis()
         axis = reduce(add3,[mul3(up,-3),mul3(right,0),mul3(forward,1.75)])
         ragdoll.leftUpperLeg.tilt_direction = axis
+        ragdoll.leftUpperLeg.final_tilt_direction = axis
         axis = reduce(add3,[mul3(up,-2),mul3(right,0),mul3(forward,0)])
         ragdoll.leftLowerLeg.tilt_direction = axis
+        ragdoll.leftLowerLeg.final_tilt_direction = axis
 
     elif c == 'W':
         ragdoll.walking = 1
@@ -895,11 +916,24 @@ def onKey(c, x, y):
         ragdoll.rightForeArm.final_tilt_direction = axis
         ragdoll.rightForeArm.tilt_str = 15
         ragdoll.rightForeArm.tilt = True
+
+        axis = reduce(add3,[mul3(up,0),mul3(right,-1.2),mul3(forward,0)])
+        ragdoll.leftUpperArm.tilt_direction = axis
+        ragdoll.leftUpperArm.final_tilt_direction = axis
+        ragdoll.leftUpperArm.tilt_str = 20
+        ragdoll.leftUpperArm.tilt = True
+        axis = reduce(add3,[mul3(up,3),mul3(right,-1),mul3(forward,0)])
+        ragdoll.leftForeArm.tilt_direction = axis
+        ragdoll.leftForeArm.final_tilt_direction = axis
+        ragdoll.leftForeArm.tilt_str = 15
+        ragdoll.leftForeArm.tilt = True
         
     elif c=='c':
         print "Releasing Arm"
         ragdoll.rightUpperArm.tilt = False
         ragdoll.rightForeArm.tilt = False
+        ragdoll.leftUpperArm.tilt = False
+        ragdoll.leftForeArm.tilt = False
 
 def onDraw():
     """GLUT render callback."""
