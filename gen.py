@@ -285,6 +285,10 @@ class RagDoll():
         self.leftHand = self.addBody(L_WRIST_POS, L_FINGERS_POS, 0.075)
         self.leftWrist = self.addHingeJoint(self.leftForeArm,
             self.leftHand, L_WRIST_POS, bkwdAxis, -0.1 * pi, 0.2 * pi)
+        self.leftUpperArm.tilt = False
+        self.leftForeArm.tilt = False
+        self.rightUpperArm.tilt = False
+        self.rightForeArm.tilt = False
 
     def addBody(self, p1, p2, radius):
         """
@@ -423,9 +427,26 @@ class RagDoll():
     
     def tilt(self,axis,body,strength=500):
         body_axis = rotate3(body.getRotation(), (0,0,1))
-        torq_axis = cross(axis,body_axis)
+        torq_axis = cross(body_axis,axis)
         ang = math.acos(body_axis[2])
         body.addTorque(mul3(norm3(torq_axis),strength*ang))
+
+    def smooth_tilt(self,body,time_steps,strength=500):
+        """
+        Assumes that Final Tilt Direction for the body is set
+        """
+        body_axis = rotate3(body.getRotation(), (0,0,1))
+        diff_axis = sub3(body.final_tilt_direction,body_axis)
+        reduced_axis = add3(body_axis,div3(diff_axis,time_steps))
+        ang_vel = body.getAngularVel()
+        torq_axis = cross(body_axis,reduced_axis )
+        coherence = dot3(ang_vel,torq_axis)
+        ang = math.acos(body_axis[2])
+        body.addTorque(mul3(norm3(torq_axis),strength*ang))
+        if coherence<0:
+            #print coherence
+            body.addTorque(mul3(norm3(torq_axis),ang*40))
+
 
     def straighten(self,elbow):
         b1 = elbow.getBody(0)
@@ -471,34 +492,36 @@ class RagDoll():
         if self.walk_state==1:
             onKey('X',0,0)
             self.walk_state=2
-            self.walk_time_steps = 200
+            self.walk_time_steps = 150
         
         elif self.walk_state==2:
             onKey('s',0,0)
             self.walk_state=3
-            self.walk_time_steps = 200
+            self.walk_time_steps = 150
         
         elif self.walk_state==3:
             onKey('T',0,0)
             self.walk_state=4
-            self.walk_time_steps = 300
+            self.walk_time_steps = 250
         
         elif self.walk_state==4:
             onKey('x',0,0)
             self.walk_state=5
-            self.walk_time_steps = 200
+            self.walk_time_steps = 150
         
         elif self.walk_state==5:
             onKey('S',0,0)
             self.walk_state=6
-            self.walk_time_steps = 200
+            self.walk_time_steps = 150
         
         elif self.walk_state==6:
             onKey('t',0,0)
             self.walk_state=1
-            self.walk_time_steps = 300
+            self.walk_time_steps = 250
 
-
+    def move_hand_to_stable_pos(self):
+        pass
+        
     def update(self):
         #body_axis = rotate3(self.bodies[1].getRotation(), (0,0,1))
         #torq_axis = cross((0,1,0),body_axis)
@@ -509,6 +532,9 @@ class RagDoll():
         lower_leg_str = 100
         self.stabilise(self.bodies[1],torso_str)
 
+        ##############
+        # Legs
+        ###############
         if self.leftUpperLeg.stabilize:
             self.stabilise(self.leftUpperLeg,upper_leg_str)
         if self.leftLowerLeg.stabilize:
@@ -528,7 +554,20 @@ class RagDoll():
             self.tilt(self.rightUpperLeg.tilt_direction,self.rightUpperLeg,upper_leg_str)
         if self.rightLowerLeg.tilt:
             self.tilt(self.rightLowerLeg.tilt_direction,self.rightLowerLeg,lower_leg_str)
-
+            
+        #############
+        # Arms
+        ################
+        if self.leftUpperArm.tilt:
+            self.tilt(self.leftUpperArm.tilt_direction,self.leftUpperArm,20)
+        if self.leftForeArm.tilt:
+            self.tilt(self.leftForeArm.tilt_direction,self.leftForeArm,40)
+        if self.rightUpperArm.tilt:
+            #self.tilt(self.rightUpperArm.tilt_direction,self.rightUpperArm,self.rightUpperArm.tilt_str)
+            self.smooth_tilt(self.rightUpperArm,10000,10)
+        if self.rightForeArm.tilt:
+            #self.tilt(self.rightForeArm.tilt_direction,self.rightForeArm,40)
+            self.smooth_tilt(self.rightForeArm,10000,10)
         self.stabilise(self.leftUpperArm,10)
         self.stabilise(self.rightUpperArm,10)
 
@@ -565,7 +604,7 @@ class RagDoll():
 
                 # get angular velocity of attached body relative to fixed body
                 relAngVel = sub3(j.getBody(1).getAngularVel(),
-                    j.getBody(0).getAngularVel())
+                j.getBody(0).getAngularVel())
                 twistAngVel = project3(relAngVel, currAxis)
                 flexAngVel = sub3(relAngVel, twistAngVel)
 
@@ -814,9 +853,9 @@ def onKey(c, x, y):
         up = ragdoll.getUpAxis()
         right = ragdoll.getRightAxis()
         forward = ragdoll.getForwardAxis()
-        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-2)])
+        axis = reduce(add3,[mul3(up,-3),mul3(right,0),mul3(forward,1.75)])
         ragdoll.rightUpperLeg.tilt_direction = axis
-        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,0)])
+        axis = reduce(add3,[mul3(up,-2),mul3(right,0),mul3(forward,0)])
         ragdoll.rightLowerLeg.tilt_direction = axis
 
     elif c == 'T':
@@ -825,9 +864,9 @@ def onKey(c, x, y):
         up = ragdoll.getUpAxis()
         right = ragdoll.getRightAxis()
         forward = ragdoll.getForwardAxis()
-        axis = reduce(add3,[mul3(up,3),mul3(right,0),mul3(forward,-2)])
+        axis = reduce(add3,[mul3(up,-3),mul3(right,0),mul3(forward,1.75)])
         ragdoll.leftUpperLeg.tilt_direction = axis
-        axis = reduce(add3,[mul3(up,2),mul3(right,0),mul3(forward,0)])
+        axis = reduce(add3,[mul3(up,-2),mul3(right,0),mul3(forward,0)])
         ragdoll.leftLowerLeg.tilt_direction = axis
 
     elif c == 'W':
@@ -840,7 +879,27 @@ def onKey(c, x, y):
         print "Ragdoll Stopped Walking"
         onKey('S',0,0)
         onKey('s',0,0)
-
+        
+    elif c == 'a':
+        print "Bending Arm"
+        up = ragdoll.getUpAxis()
+        right = ragdoll.getRightAxis()
+        forward = ragdoll.getForwardAxis()
+        axis = reduce(add3,[mul3(up,0),mul3(right,1.2),mul3(forward,0)])
+        ragdoll.rightUpperArm.tilt_direction = axis
+        ragdoll.rightUpperArm.final_tilt_direction = axis
+        ragdoll.rightUpperArm.tilt_str = 20
+        ragdoll.rightUpperArm.tilt = True
+        axis = reduce(add3,[mul3(up,3),mul3(right,1),mul3(forward,0)])
+        ragdoll.rightForeArm.tilt_direction = axis
+        ragdoll.rightForeArm.final_tilt_direction = axis
+        ragdoll.rightForeArm.tilt_str = 15
+        ragdoll.rightForeArm.tilt = True
+        
+    elif c=='c':
+        print "Releasing Arm"
+        ragdoll.rightUpperArm.tilt = False
+        ragdoll.rightForeArm.tilt = False
 
 def onDraw():
     """GLUT render callback."""
@@ -858,7 +917,13 @@ def onDraw():
         color = [0.5,0.8,0.1]
         glMaterialfv(GL_FRONT,GL_DIFFUSE,color)
         glutSolidSphere(0.1,10,10)
-
+    if ragdoll.walking==1:
+        glBegin(GL_LINES)
+        glColor3f(0,0,.20)
+        glVertex3f(0,0,0)
+        glVertex3f(0,1,0)
+        glEnd()
+    
     glutSwapBuffers()
 
 
