@@ -210,7 +210,7 @@ class RagDoll():
         self.totalMass = 0.0
         self.walking = 0
         self.walk_time_steps = 100
-        self.walking_force = 130
+        self.walking_force = 60
         self.walk_time_counter = 0
         self.offset = offset
 
@@ -524,6 +524,9 @@ class RagDoll():
 
     def move_hand_to_stable_pos(self):
         pass
+    
+    def kickass(self):
+        self.pelvis.addForce(mul3((0,1,0),8000))
         
     def update(self):
         #body_axis = rotate3(self.bodies[1].getRotation(), (0,0,1))
@@ -531,7 +534,7 @@ class RagDoll():
         #ang = math.acos(body_axis[2])
         #self.bodies[1].addTorque(mul3(norm3(torq_axis),500*ang))
         torso_str = 150
-        upper_leg_str = 50
+        upper_leg_str = 100
         lower_leg_str = 100
         self.stabilise(self.bodies[1],torso_str)
 
@@ -935,6 +938,9 @@ def onKey(c, x, y):
         ragdoll.leftUpperArm.tilt = False
         ragdoll.leftForeArm.tilt = False
 
+    elif c=='l':
+        ragdoll.kickass()
+
 def onDraw():
     """GLUT render callback."""
 
@@ -1042,13 +1048,13 @@ print "total mass is %.1f kg (%.1f lbs)" % (ragdoll.totalMass,
     ragdoll.totalMass * 2.2)
 
 # create an obstacle
-obstacle, obsgeom = createCapsule(world, space, 1000, 0.05, 0.15)
-pos = (random.uniform(-0.3, 0.3), 0.2, random.uniform(-0.15, 0.2))
-#pos = (0.27396178783269359, 0.20000000000000001, 0.17531818795388002)
-obstacle.setPosition(pos)
-obstacle.setRotation(rightRot)
-bodies.append(obstacle)
-print "obstacle created at %s" % (str(pos))
+#obstacle, obsgeom = createCapsule(world, space, 1000, 0.05, 0.15)
+#pos = (random.uniform(-0.3, 0.3), 0.2, random.uniform(-0.15, 0.2))
+##pos = (0.27396178783269359, 0.20000000000000001, 0.17531818795388002)
+#obstacle.setPosition(pos)
+#obstacle.setRotation(rightRot)
+#bodies.append(obstacle)
+#print "obstacle created at %s" % (str(pos))
 
 # set GLUT callbacks
 glutKeyboardFunc(onKey)
