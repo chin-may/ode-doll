@@ -217,6 +217,16 @@ class RagDoll():
         self.punch_state = 1
         self.punch_time_steps = 100
         self.punch_time_counter = 0
+        
+        self.kicking = 0
+        self.kick_state = 1
+        self.kick_time_steps = 100
+        self.kick_time_counter = 0
+
+        self.handwaving = 0
+        self.handwave_state = 1
+        self.handwave_time_steps = 100
+        self.handwave_time_counter = 0
 
         self.offset = offset
         self.restoring_torque = 40
@@ -580,6 +590,39 @@ class RagDoll():
             self.punch_time_steps = 50
         elif self.punch_state==4:
             finishPunch()
+            
+    def kick(self):
+        print "State - "+str(self.kick_state)
+        if self.kick_state==1:
+            initKickLegBehind()
+            self.kick_state=2
+            self.kick_time_steps = 400
+        elif self.kick_state==2:
+            initKickLegFront()
+            self.kick_state=3
+            self.kick_time_steps = 400
+
+        elif self.kick_state==3:
+            finishKick()
+            
+    def handwave(self):
+        print "State - "+str(self.handwave_state)
+        if self.handwave_state==1:
+            initHandWavePos1()
+            self.handwave_state=2
+            self.handwave_time_steps = 1000
+        elif self.handwave_state==2:
+            initHandWavePos2()
+            self.handwave_state=3
+            self.handwave_time_steps = 250
+        elif self.handwave_state==3:
+            initHandWavePos3()
+            self.handwave_state=2
+            self.handwave_time_steps = 200
+
+        elif self.handwave_state==4:
+            finishHandWave()
+    
     def move_hand_to_stable_pos(self):
         pass
 
@@ -620,8 +663,19 @@ class RagDoll():
                 self.punch()
                 self.punch_time_counter = 0
             self.punch_time_counter+=1
+        
+        if self.handwaving == 1:
+            if self.handwave_time_counter==self.handwave_time_steps:
+                self.handwave()
+                self.handwave_time_counter = 0
+            self.handwave_time_counter+=1
 
-
+        if self.kicking == 1:
+            if self.kick_time_counter==self.kick_time_steps:
+                self.kick()
+                self.kick_time_counter = 0
+            self.kick_time_counter+=1
+            self.pelvis.addTorque((0,-8,0))
         THRESH = 0.0
         ANG_THRESH = 0
 
@@ -847,11 +901,6 @@ def getRelPos(up_coeff,right_coeff,for_coeff):
     return dest
 
 
-
-
-
-
-
 def initStandOnLeftLeg():
     """
     Stands on left leg
@@ -953,11 +1002,11 @@ def initPunchRaiseArm2():
 def initPunchExtendArm():
     print "Extending Arm"
     axis = getRelAxis(0,0,3)
-    ragdoll.rightUpperArm.tilt_str = 50
+    ragdoll.rightUpperArm.tilt_str = 40
     ragdoll.rightUpperArm.final_tilt_direction = axis
     ragdoll.rightUpperArm.tilt_time = 100
     ragdoll.rightUpperArm.tilt = True
-    ragdoll.rightForeArm.tilt_str = 50
+    ragdoll.rightForeArm.tilt_str = 40
     ragdoll.rightForeArm.tilt_time = 100
     axis = getRelAxis(0,-1,3)
     ragdoll.rightForeArm.final_tilt_direction = axis
@@ -968,12 +1017,15 @@ def initPunchExtendArm():
     ragdoll.rightUpperLeg.stabilizing_str = 1000
     ragdoll.rightLowerLeg.stabilizing_str = 1000
 
-def finishPunch():
+def relaxArms():
     ragdoll.rightUpperArm.tilt = False
     ragdoll.rightForeArm.tilt = False
     ragdoll.leftUpperArm.tilt = False
     ragdoll.leftForeArm.tilt = False
 
+
+def finishPunch():
+    relaxArms()
     ragdoll.leftUpperLeg.stabilizing_str = 100
     ragdoll.leftLowerLeg.stabilizing_str = 100
     ragdoll.rightUpperLeg.stabilizing_str = 100
@@ -984,6 +1036,102 @@ def finishPunch():
     print "Ragdoll Stopped Punching"
 
 
+def initKick():
+    ragdoll.kicking = 1
+    ragdoll.kick_state=1
+    print "Ragdoll Started Kicking"
+
+
+def initKickLegBehind():
+    initStandOnLeftLeg()
+    ragdoll.rightUpperLeg.tilt = True
+    ragdoll.rightLowerLeg.tilt = True
+    ragdoll.rightUpperLeg.tilt_str = 20
+    ragdoll.rightLowerLeg.tilt_str = 30
+    ragdoll.rightUpperLeg.tilt_time = 100
+    ragdoll.rightLowerLeg.tilt_time = 100
+
+    axis = getRelAxis(-3,0.25,-0.75)
+    ragdoll.rightUpperLeg.tilt_direction = axis
+    ragdoll.rightUpperLeg.final_tilt_direction = axis
+
+    axis = getRelAxis(-2,0.5,-1)
+    ragdoll.rightLowerLeg.tilt_direction = axis
+    ragdoll.rightLowerLeg.final_tilt_direction = axis
+    
+def initKickLegFront():
+    initStandOnLeftLeg()
+    ragdoll.rightUpperLeg.tilt = True
+    ragdoll.rightLowerLeg.tilt = True
+    ragdoll.rightUpperLeg.tilt_str = 20
+    ragdoll.rightLowerLeg.tilt_str = 30
+    ragdoll.rightUpperLeg.tilt_time = 100
+    ragdoll.rightLowerLeg.tilt_time = 100
+
+    axis = getRelAxis(-3,0,0.75)
+    ragdoll.rightUpperLeg.tilt_direction = axis
+    ragdoll.rightUpperLeg.final_tilt_direction = axis
+
+    axis = getRelAxis(-2,0,1)
+    ragdoll.rightLowerLeg.tilt_direction = axis
+    ragdoll.rightLowerLeg.final_tilt_direction = axis
+    
+def finishKick():
+    initRestRightLeg()
+    ragdoll.kicking = 0
+    ragdoll.kick_state=1
+    print "Ragdoll Finished Kicking"
+    
+def initHandWave():
+    ragdoll.handwaving = 1
+    ragdoll.handwave_state=1
+    print "Ragdoll Started Waving Hand"
+
+def initHandWavePos1():
+    axis = getRelAxis(0,1.5,0.75)
+    ragdoll.rightUpperArm.final_tilt_direction = axis
+    ragdoll.rightUpperArm.tilt = True
+    ragdoll.rightUpperArm.tilt_str = 30
+    ragdoll.rightUpperArm.tilt_time = 300
+    axis = getRelAxis(3,0,1)
+    ragdoll.rightForeArm.final_tilt_direction = axis
+    ragdoll.rightForeArm.tilt = True
+    ragdoll.rightForeArm.tilt_str = 30
+    ragdoll.rightForeArm.tilt_time = 300
+
+def initHandWavePos2():
+    axis = getRelAxis(0,1.5,0.75)
+    ragdoll.rightUpperArm.final_tilt_direction = axis
+    ragdoll.rightUpperArm.tilt = True
+    ragdoll.rightUpperArm.tilt_str = 20
+    ragdoll.rightUpperArm.tilt_time = 300
+    axis = getRelAxis(3,-1,1)
+    ragdoll.rightForeArm.final_tilt_direction = axis
+    ragdoll.rightForeArm.tilt = True
+    ragdoll.rightForeArm.tilt_str = 20
+    ragdoll.rightForeArm.tilt_time = 300
+    
+
+def initHandWavePos3():
+    axis = getRelAxis(0,1.5,0.75)
+    ragdoll.rightUpperArm.final_tilt_direction = axis
+    ragdoll.rightUpperArm.tilt = True
+    ragdoll.rightUpperArm.tilt_str = 2
+    ragdoll.rightUpperArm.tilt_time = 3000
+    axis = getRelAxis(3,1,1)
+    ragdoll.rightForeArm.final_tilt_direction = axis
+    ragdoll.rightForeArm.tilt = True
+    ragdoll.rightForeArm.tilt_str = 2
+    ragdoll.rightForeArm.tilt_time = 3000
+    
+def finishHandWave():
+    relaxArms()
+    ragdoll.handwaving = 0
+    ragdoll.handwave_state=1
+    print "Ragdoll Stopped Waving Hand"
+    
+
+    
 def onKey(c, x, y):
     """GLUT keyboard callback."""
 
@@ -1018,6 +1166,9 @@ def onKey(c, x, y):
 
     elif c == 'h':
         initPunch()
+        
+    elif c == 'w':
+        initHandWave()
 
     elif c == 'W':
         ragdoll.walking = 1
@@ -1037,6 +1188,7 @@ def onKey(c, x, y):
         ragdoll.rightUpperArm.tilt = True
         ragdoll.rightUpperArm.tilt_str = 30
         ragdoll.rightUpperArm.tilt_time = 100
+        
         axis = getRelAxis(-3,0,1)
         ragdoll.rightForeArm.final_tilt_direction = axis
         ragdoll.rightForeArm.tilt = True
@@ -1071,6 +1223,8 @@ def onKey(c, x, y):
                 mul3(ragdoll.getForwardAxis(),-0.36),rp])
         body.setPosition(blockpos)
         body.setRotation(ragdoll.pelvis.getRotation())
+    elif c == 'k':
+        initKick()
 
 def onDraw():
     """GLUT render callback."""
