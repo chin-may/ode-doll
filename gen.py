@@ -778,7 +778,7 @@ class RagDoll():
                 self.kick()
                 self.kick_time_counter = 0
             self.kick_time_counter+=1
-            self.pelvis.addTorque((0,-3,0))
+            self.pelvis.addTorque((0,-6,0))
         THRESH = 0.0
         ANG_THRESH = 0
 
@@ -1067,7 +1067,7 @@ class RagDoll():
         ragdoll.rightUpperLeg.tilt = True
         ragdoll.rightLowerLeg.tilt = True
         ragdoll.rightUpperLeg.tilt_str = 20
-        ragdoll.rightLowerLeg.tilt_str = 30
+        ragdoll.rightLowerLeg.tilt_str = 100
         ragdoll.rightUpperLeg.tilt_time = 100
         ragdoll.rightLowerLeg.tilt_time = 100
 
