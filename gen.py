@@ -1308,6 +1308,22 @@ def onKey(c, x, y):
         ragdoll.sitting = 1
         ragdoll.sit_state = 1
 
+    elif c == '+':
+        direction = norm3(sub3(ragdoll.belly.getPosition(),eye))
+        tmp_eye = add3(eye,mul3(direction,0.1))
+        tmp_look_obj = add3(look_obj,mul3(direction,0.1))
+        for i in xrange(3):
+            eye[i]=tmp_eye[i]
+            look_obj[i]=tmp_look_obj[i]
+
+    elif c == '-':
+        direction = norm3(sub3(ragdoll.belly.getPosition(),eye))
+        tmp_eye = add3(eye,mul3(direction,-0.1))
+        tmp_look_obj = add3(look_obj,mul3(direction,-0.1))
+        for i in xrange(3):
+            eye[i]=tmp_eye[i]
+            look_obj[i]=tmp_look_obj[i]
+
 def onDraw():
     """GLUT render callback."""
 
