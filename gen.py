@@ -212,12 +212,12 @@ class RagDoll():
         self.walk_time_steps = 100
         self.walking_force = 60
         self.walk_time_counter = 0
-        
+
         self.punching = 0
         self.punch_state = 1
         self.punch_time_steps = 100
         self.punch_time_counter = 0
-        
+
         self.offset = offset
         self.restoring_torque = 40
 
@@ -251,7 +251,7 @@ class RagDoll():
         self.leftLowerLeg = self.addBody(L_KNEE_POS, L_ANKLE_POS, 0.09)
         self.leftKnee = self.addHingeJoint(self.leftUpperLeg,
             self.leftLowerLeg, L_KNEE_POS, leftAxis, 0.0, pi * 0.75)
-            
+
         #self.rightFoot = self.addBody(R_HEEL_POS, R_TOES_POS, 0.09)
         #self.rightAnkle = self.addHingeJoint(self.rightLowerLeg,
             #self.rightFoot, R_ANKLE_POS, rightAxis, -0.1 * pi, 0.05 * pi)
@@ -284,7 +284,7 @@ class RagDoll():
         self.leftHand = self.addBody(L_WRIST_POS, L_FINGERS_POS, 0.075)
         self.leftWrist = self.addHingeJoint(self.leftForeArm,
             self.leftHand, L_WRIST_POS, bkwdAxis, -0.1 * pi, 0.2 * pi)
-        
+
         self.belly.stabilize = True
         self.rightUpperLeg.stabilize = True
         self.rightLowerLeg.stabilize = True
@@ -297,36 +297,36 @@ class RagDoll():
         self.belly.righttilt = True
 
         self.belly.stabilizing_str = 150
-        
+
         self.leftUpperLeg.stabilizing_str = 100
         self.leftLowerLeg.stabilizing_str = 100
         self.rightUpperLeg.stabilizing_str = 100
         self.rightLowerLeg.stabilizing_str = 100
-        
+
         self.rightUpperArm.stabilizing_str = 10
         self.leftUpperArm.stabilizing_str = 10
-        
+
         self.leftUpperLeg.tilt_str = 20
         self.leftLowerLeg.tilt_str = 30
         self.rightUpperLeg.tilt_str = 20
         self.rightLowerLeg.tilt_str = 30
-        
+
         self.rightUpperArm.tilt_str = 20
         self.rightForeArm.tilt_str = 20
         self.leftUpperArm.tilt_str = 20
         self.leftForeArm.tilt_str = 20
-        
+
         self.leftUpperLeg.tilt_time = 10
         self.leftLowerLeg.tilt_time = 10
         self.rightUpperLeg.tilt_time = 10
         self.rightLowerLeg.tilt_time = 10
-        
+
         self.rightUpperArm.tilt_time = 1000
         self.rightForeArm.tilt_time = 1000
         self.leftUpperArm.tilt_time = 1000
         self.leftForeArm.tilt_time = 1000
 
-        
+
     def addBody(self, p1, p2, radius):
         """
         Adds a capsule body between joint positions p1 and p2 and with given
@@ -468,7 +468,7 @@ class RagDoll():
             body.addTorque(mul3(norm3(torq_axis),body.stabilizing_str*ang))
         else:
             body.addTorque(mul3(norm3(torq_axis),500*ang))
-                
+
 
     def smooth_tilt(self,body):
         """
@@ -528,52 +528,52 @@ class RagDoll():
         up_axis = self.getUpAxis()
         front_axis = cross(up_axis,right_axis)
         return front_axis
-        
+
     def walk(self):
         print "State - "+str(self.walk_state)
         if self.walk_state==1:
             initStandOnRightLeg()
             self.walk_state=2
             self.walk_time_steps = 150
-        
+
         elif self.walk_state==2:
             initRestRightLeg()
             self.walk_state=3
             self.walk_time_steps = 150
-        
+
         elif self.walk_state==3:
             initWalkLeftLegFront()
             self.walk_state=4
             self.walk_time_steps = 250
-        
+
         elif self.walk_state==4:
             initStandOnLeftLeg()
             self.walk_state=5
             self.walk_time_steps = 150
-        
+
         elif self.walk_state==5:
             initRestLeftLeg()
             self.walk_state=6
             self.walk_time_steps = 150
-        
+
         elif self.walk_state==6:
             initWalkRightLegFront()
             self.walk_state=1
             self.walk_time_steps = 250
-    
-    
+
+
     def punch(self):
         print "State - "+str(self.punch_state)
         if self.punch_state==1:
             initPunchRaiseArm()
             self.punch_state=2
             self.punch_time_steps = 150
-        
+
         elif self.punch_state==2:
             initPunchRaiseArm2()
             self.punch_state=3
             self.punch_time_steps = 150
-        
+
         elif self.punch_state==3:
             initPunchExtendArm()
             self.punch_state = 4
@@ -582,23 +582,23 @@ class RagDoll():
             finishPunch()
     def move_hand_to_stable_pos(self):
         pass
-    
+
     def kickass(self):
         self.pelvis.addForce(mul3((0,1,0),8000))
-        
+
     def update(self):
         self.stabilise(self.belly)
         for b in self.bodies:
             if b.stabilize:
-                self.stabilise(b)    
+                self.stabilise(b)
             if b.tilt:
-                self.smooth_tilt(b)    
+                self.smooth_tilt(b)
 
         if self.belly.lefttilt:
             self.belly.addTorque(mul3(self.getForwardAxis(),-100))
         if self.belly.righttilt:
             self.belly.addTorque(mul3(self.getForwardAxis(),100))
-        
+
         self.stabilise(self.leftUpperArm)
         self.stabilise(self.rightUpperArm)
         self.straighten(self.leftElbow)
@@ -620,7 +620,7 @@ class RagDoll():
                 self.punch()
                 self.punch_time_counter = 0
             self.punch_time_counter+=1
-            
+
 
         THRESH = 0.0
         ANG_THRESH = 0
@@ -681,6 +681,18 @@ class RagDoll():
                     j.getBody(1).addTorque(mul3(twistAngVel,
                         -0.01 * j.twistForce))
 
+
+def createCube(world,space,density,length):
+    """Creates a cube body and corresponding geom."""
+    body = ode.Body(world)
+    M = ode.Mass()
+    M.setBox(density,length,length,length)
+    body.setMass(M)
+    body.shape = 'cube'
+    body.length = length
+    geom = ode.GeomBox(space,(length,length,length))
+    geom.setBody(body)
+    return body,geom
 
 def createCapsule(world, space, density, length, radius,tag='def'):
     """Creates a capsule body and corresponding geom."""
@@ -810,7 +822,13 @@ def draw_body(body):
         glutSolidSphere(body.radius, CAPSULE_SLICES, CAPSULE_STACKS)
         glTranslated(0, 0, -2.0 * cylHalfHeight)
         glutSolidSphere(body.radius, CAPSULE_SLICES, CAPSULE_STACKS)
+    elif body.shape == "cube":
+        glutSolidCube(body.length)
+        pass
+
     glPopMatrix()
+
+
 
 def getRelAxis(up_coeff,right_coeff,for_coeff):
     up = ragdoll.getUpAxis()
@@ -830,8 +848,8 @@ def getRelPos(up_coeff,right_coeff,for_coeff):
 
 
 
-        
-       
+
+
 
 
 def initStandOnLeftLeg():
@@ -843,7 +861,7 @@ def initStandOnLeftLeg():
     ragdoll.rightUpperLeg.tilt = False
     ragdoll.rightLowerLeg.tilt = False
     ragdoll.belly.lefttilt = True
-    
+
 def initStandOnRightLeg():
     """
     Stands on right leg
@@ -875,15 +893,15 @@ def initWalkRightLegFront():
     ragdoll.rightLowerLeg.tilt_time = 10
     ragdoll.rightUpperLeg.tilt_str = 20
     ragdoll.rightLowerLeg.tilt_str = 30
- 
+
     axis = getRelAxis(-3,0,1.75)
     ragdoll.rightUpperLeg.tilt_direction = axis
     ragdoll.rightUpperLeg.final_tilt_direction = axis
-    
+
     axis = getRelAxis(-2,0,0)
     ragdoll.rightLowerLeg.tilt_direction = axis
     ragdoll.rightLowerLeg.final_tilt_direction = axis
-    
+
 def initWalkLeftLegFront():
     ragdoll.leftUpperLeg.tilt = True
     ragdoll.leftLowerLeg.tilt = True
@@ -899,13 +917,13 @@ def initWalkLeftLegFront():
     axis = getRelAxis(-2,0,0)
     ragdoll.leftLowerLeg.tilt_direction = axis
     ragdoll.leftLowerLeg.final_tilt_direction = axis
-    
+
 def initPunch():
     ragdoll.punching = True
     ragdoll.punching = 1
     ragdoll.punch_state=1
     print "Ragdoll Started Punching"
-    
+
 def initPunchRaiseArm():
     print "Raising Arm"
     axis = getRelAxis(0,3,-1)
@@ -918,7 +936,7 @@ def initPunchRaiseArm():
     axis = getRelAxis(3,0,1)
     ragdoll.rightForeArm.final_tilt_direction = axis
     ragdoll.rightForeArm.tilt = True
-    
+
 def initPunchRaiseArm2():
     print "Raising Arm 2"
     axis = getRelAxis(0,3,-1)
@@ -931,7 +949,7 @@ def initPunchRaiseArm2():
     axis = getRelAxis(1,-2,3)
     ragdoll.rightForeArm.final_tilt_direction = axis
     ragdoll.rightForeArm.tilt = True
-    
+
 def initPunchExtendArm():
     print "Extending Arm"
     axis = getRelAxis(0,0,3)
@@ -944,7 +962,7 @@ def initPunchExtendArm():
     axis = getRelAxis(0,-1,3)
     ragdoll.rightForeArm.final_tilt_direction = axis
     ragdoll.rightForeArm.tilt = True
-    ragdoll.restoring_torque = 1000    
+    ragdoll.restoring_torque = 1000
     ragdoll.leftUpperLeg.stabilizing_str = 1000
     ragdoll.leftLowerLeg.stabilizing_str = 1000
     ragdoll.rightUpperLeg.stabilizing_str = 1000
@@ -955,14 +973,14 @@ def finishPunch():
     ragdoll.rightForeArm.tilt = False
     ragdoll.leftUpperArm.tilt = False
     ragdoll.leftForeArm.tilt = False
-    
+
     ragdoll.leftUpperLeg.stabilizing_str = 100
     ragdoll.leftLowerLeg.stabilizing_str = 100
     ragdoll.rightUpperLeg.stabilizing_str = 100
     ragdoll.rightLowerLeg.stabilizing_str = 100
-    
+
     ragdoll.punching = 0
-    ragdoll.punch_state=1        
+    ragdoll.punch_state=1
     print "Ragdoll Stopped Punching"
 
 
@@ -980,7 +998,7 @@ def onKey(c, x, y):
     # quit
     elif c == 'q' or c == 'Q':
         sys.exit(0)
-    
+
     elif c == 'b':
         obstacle, obsgeom = createCapsule(world, space, 1000, 0.05, 0.15)
         obstacle.tag = 'dropped'
@@ -993,7 +1011,7 @@ def onKey(c, x, y):
         bodies.append(obstacle)
         geoms.append(obsgeom)
         print "obstacle created at %s" % (str(pos))
-        
+
     elif c == 'm':
         ragdoll.rightHand.destination = getRelPos(0.5,0.5,0.5)
         ragdoll.rightHand.moving = True
@@ -1007,11 +1025,11 @@ def onKey(c, x, y):
         print "Ragdoll Started Walking"
     elif c == 'Z':
         ragdoll.walking = 0
-        ragdoll.walk_state=1        
+        ragdoll.walk_state=1
         print "Ragdoll Stopped Walking"
         initRestRightLeg()
         initRestLeftLeg()
-        
+
     elif c == 'a':
         print "Bending Arm"
         axis = getRelAxis(-3,1.5,1)
@@ -1024,7 +1042,7 @@ def onKey(c, x, y):
         ragdoll.rightForeArm.tilt = True
         ragdoll.leftForeArm.tilt_str = 30
         ragdoll.rightForeArm.tilt_time = 100
-        
+
         axis = getRelAxis(-3,-1.5,1)
         ragdoll.leftUpperArm.final_tilt_direction = axis
         ragdoll.leftUpperArm.tilt = True
@@ -1033,17 +1051,26 @@ def onKey(c, x, y):
         axis = getRelAxis(-3,0,1)
         ragdoll.leftForeArm.final_tilt_direction = axis
         ragdoll.leftForeArm.tilt = True
-        ragdoll.leftForeArm.tilt_str = 30     
+        ragdoll.leftForeArm.tilt_str = 30
         ragdoll.leftForeArm.tilt_time = 100
-        
+
     elif c=='c':
         print "Releasing Arm"
-        relaxArms()        
+        relaxArms()
 
     elif c=='l':
         ragdoll.kickass()
-    elif c==GLUT_KEY_UP:
-        print "Up Up Up"
+
+    elif c == 's':
+        print 'Sitting down'
+        body, geom = createCube(world,space,100000,0.35)
+        bodies.append(body)
+        geoms.append(geom)
+        rp = ragdoll.pelvis.getPosition()
+        blockpos = reduce(add3, [mul3(ragdoll.getUpAxis(),-0.6),
+                mul3(ragdoll.getForwardAxis(),-0.36),rp])
+        body.setPosition(blockpos)
+        body.setRotation(ragdoll.pelvis.getRotation())
 
 def onDraw():
     """GLUT render callback."""
@@ -1067,7 +1094,7 @@ def onDraw():
         glVertex3f(0,0,0)
         glVertex3f(0,1,0)
         glEnd()
-    
+
     glutSwapBuffers()
 
 
