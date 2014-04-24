@@ -574,16 +574,16 @@ class RagDoll():
         ################
         if self.leftUpperArm.tilt:
 #            self.tilt(self.leftUpperArm.tilt_direction,self.leftUpperArm,20)
-            self.smooth_tilt(self.leftUpperArm,10000,10)
+            self.smooth_tilt(self.leftUpperArm,10000,20)
         if self.leftForeArm.tilt:
 #            self.tilt(self.leftForeArm.tilt_direction,self.leftForeArm,40)
-            self.smooth_tilt(self.leftForeArm,10000,10)
+            self.smooth_tilt(self.leftForeArm,10000,20)
         if self.rightUpperArm.tilt:
             #self.tilt(self.rightUpperArm.tilt_direction,self.rightUpperArm,self.rightUpperArm.tilt_str)
-            self.smooth_tilt(self.rightUpperArm,10000,10)
+            self.smooth_tilt(self.rightUpperArm,10000,20)
         if self.rightForeArm.tilt:
             #self.tilt(self.rightForeArm.tilt_direction,self.rightForeArm,40)
-            self.smooth_tilt(self.rightForeArm,10000,10)
+            self.smooth_tilt(self.rightForeArm,10000,20)
         self.stabilise(self.leftUpperArm,10)
         self.stabilise(self.rightUpperArm,10)
 
@@ -740,7 +740,9 @@ def prepare_GL():
     glEnable(GL_COLOR_MATERIAL)
     glColor3f(0.8, 0.8, 0.8)
 
-    gluLookAt(2.5, 7.0, 7.0, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0)
+#    gluLookAt(2.5, 10.0, 10.0, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0)
+    gluLookAt(eye[0],eye[1],eye[2],look_obj[0],look_obj[1],look_obj[2],
+            look_up[0],look_up[1],look_up[2])
 
 
 # polygon resolution for capsule bodies
@@ -909,23 +911,23 @@ def onKey(c, x, y):
         up = ragdoll.getUpAxis()
         right = ragdoll.getRightAxis()
         forward = ragdoll.getForwardAxis()
-        axis = reduce(add3,[mul3(up,0),mul3(right,1.2),mul3(forward,0)])
+        axis = reduce(add3,[mul3(up,-3),mul3(right,1.5),mul3(forward,1)])
         ragdoll.rightUpperArm.tilt_direction = axis
         ragdoll.rightUpperArm.final_tilt_direction = axis
         ragdoll.rightUpperArm.tilt_str = 20
         ragdoll.rightUpperArm.tilt = True
-        axis = reduce(add3,[mul3(up,3),mul3(right,1),mul3(forward,0)])
+        axis = reduce(add3,[mul3(up,-3),mul3(right,0),mul3(forward,1)])
         ragdoll.rightForeArm.tilt_direction = axis
         ragdoll.rightForeArm.final_tilt_direction = axis
         ragdoll.rightForeArm.tilt_str = 15
         ragdoll.rightForeArm.tilt = True
 
-        axis = reduce(add3,[mul3(up,0),mul3(right,-1.2),mul3(forward,0)])
+        axis = reduce(add3,[mul3(up,-3),mul3(right,-1.5),mul3(forward,1)])
         ragdoll.leftUpperArm.tilt_direction = axis
         ragdoll.leftUpperArm.final_tilt_direction = axis
         ragdoll.leftUpperArm.tilt_str = 20
         ragdoll.leftUpperArm.tilt = True
-        axis = reduce(add3,[mul3(up,3),mul3(right,-1),mul3(forward,0)])
+        axis = reduce(add3,[mul3(up,-3),mul3(right,0),mul3(forward,1)])
         ragdoll.leftForeArm.tilt_direction = axis
         ragdoll.leftForeArm.final_tilt_direction = axis
         ragdoll.leftForeArm.tilt_str = 15
@@ -1069,6 +1071,12 @@ glutIdleFunc(onIdle)
 glutSpecialFunc(processSpecialKeys)
 #walking state global
 walking = 0
+
+#Camera position globals
+eye = [2.5,10.0,10.0]
+look_obj = [0.5,1.0,0.0]
+look_up = [0,1,0]
+
 
 
 # enter the GLUT event loop
