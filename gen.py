@@ -577,7 +577,7 @@ class RagDoll():
         elif self.punch_state==3:
             initPunchExtendArm()
             self.punch_state = 4
-            self.punch_time_steps = 150
+            self.punch_time_steps = 50
         elif self.punch_state==4:
             finishPunch()
     def move_hand_to_stable_pos(self):
@@ -587,27 +587,20 @@ class RagDoll():
         self.pelvis.addForce(mul3((0,1,0),8000))
         
     def update(self):
-        
         self.stabilise(self.belly)
-
         for b in self.bodies:
             if b.stabilize:
                 self.stabilise(b)    
-
-        for b in self.bodies:
             if b.tilt:
                 self.smooth_tilt(b)    
 
-        
         if self.belly.lefttilt:
             self.belly.addTorque(mul3(self.getForwardAxis(),-100))
         if self.belly.righttilt:
             self.belly.addTorque(mul3(self.getForwardAxis(),100))
-       
         
         self.stabilise(self.leftUpperArm)
         self.stabilise(self.rightUpperArm)
-
         self.straighten(self.leftElbow)
         self.straighten(self.rightElbow)
 
@@ -942,11 +935,11 @@ def initPunchRaiseArm2():
 def initPunchExtendArm():
     print "Extending Arm"
     axis = getRelAxis(0,0,3)
-    ragdoll.rightUpperArm.tilt_str = 60
+    ragdoll.rightUpperArm.tilt_str = 50
     ragdoll.rightUpperArm.final_tilt_direction = axis
     ragdoll.rightUpperArm.tilt_time = 100
     ragdoll.rightUpperArm.tilt = True
-    ragdoll.rightForeArm.tilt_str = 100
+    ragdoll.rightForeArm.tilt_str = 50
     ragdoll.rightForeArm.tilt_time = 100
     axis = getRelAxis(0,-1,3)
     ragdoll.rightForeArm.final_tilt_direction = axis
@@ -1196,4 +1189,3 @@ look_up = [0,1,0]
 
 # enter the GLUT event loop
 glutMainLoop()
-
