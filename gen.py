@@ -743,8 +743,8 @@ def prepare_GL():
     glEnable(GL_COLOR_MATERIAL)
     glColor3f(0.8, 0.8, 0.8)
 
-    gluLookAt(2.5, 7.0, 7.0, 0.5, 1.0, 0.0, 0.0, 1.0, 0.0)
-
+    gluLookAt(eye[0],eye[1],eye[2],look_obj[0],look_obj[1],look_obj[2],
+            look_up[0],look_up[1],look_up[2])
 
 # polygon resolution for capsule bodies
 
@@ -918,17 +918,17 @@ def onKey(c, x, y):
         
     elif c == 'a':
         print "Bending Arm"
-        axis = getRelAxis(0,1.2,0)
+        axis = getRelAxis(-3,1.5,1)
         ragdoll.rightUpperArm.final_tilt_direction = axis
         ragdoll.rightUpperArm.tilt = True
-        axis = getRelAxis(3,1,0)
+        axis = getRelAxis(-3,0,1)
         ragdoll.rightForeArm.final_tilt_direction = axis
         ragdoll.rightForeArm.tilt = True
 
-        axis = getRelAxis(0,-1.2,0)
+        axis = getRelAxis(-3,-1.5,1)
         ragdoll.leftUpperArm.final_tilt_direction = axis
         ragdoll.leftUpperArm.tilt = True
-        axis = getRelAxis(3,-1,0)
+        axis = getRelAxis(-3,0,1)
         ragdoll.leftForeArm.final_tilt_direction = axis
         ragdoll.leftForeArm.tilt = True
         
@@ -1000,10 +1000,21 @@ def onIdle():
         contactgroup.empty()
 
     lasttime = time.time()
-    
+
 def processSpecialKeys(key, xx, yy):
     if key == GLUT_KEY_LEFT :
-        print "Left"
+        eye[0]-=0.1
+        look_obj[0]-=0.1
+    elif key == GLUT_KEY_RIGHT :
+        eye[0]+=0.1
+        look_obj[0]+=0.1
+    elif key == GLUT_KEY_DOWN :
+        eye[1]-=0.1
+        look_obj[1]-=0.1
+    elif key == GLUT_KEY_UP :
+        eye[1]+=0.1
+        look_obj[1]+=0.1
+
 
 # initialize GLUT
 glutInit([])
@@ -1070,7 +1081,10 @@ glutIdleFunc(onIdle)
 glutSpecialFunc(processSpecialKeys)
 #walking state global
 walking = 0
-
+#Camera position globals
+eye = [2.5,10.0,10.0]
+look_obj = [0.5,1.0,0.0]
+look_up = [0,1,0]
 
 # enter the GLUT event loop
 glutMainLoop()
