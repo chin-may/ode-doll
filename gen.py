@@ -1603,6 +1603,13 @@ def onKey(c, x, y):
     elif c == '2':
         curr_ragdoll = (curr_ragdoll+1)%len(ragdolls)
         ragdoll = ragdolls[curr_ragdoll]
+    elif c == 'o':
+        if ragdoll:
+            ragdoll = None
+        ragdolls.pop()
+    elif c == 'O':
+        ragdolls.append(RagDoll(world, space, 500, (0.0, 0.9, 0.0)))
+        ragdoll = ragdolls[0]
 
 def onDraw():
     """GLUT render callback."""
