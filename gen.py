@@ -940,6 +940,8 @@ def onKey(c, x, y):
 
     elif c=='l':
         ragdoll.kickass()
+    elif c==GLUT_KEY_UP:
+        print "Up Up Up"
 
 def onDraw():
     """GLUT render callback."""
@@ -997,6 +999,10 @@ def onIdle():
         contactgroup.empty()
 
     lasttime = time.time()
+    
+def processSpecialKeys(key, xx, yy):
+    if key == GLUT_KEY_LEFT :
+        print "Left"
 
 # initialize GLUT
 glutInit([])
@@ -1060,7 +1066,7 @@ print "total mass is %.1f kg (%.1f lbs)" % (ragdoll.totalMass,
 glutKeyboardFunc(onKey)
 glutDisplayFunc(onDraw)
 glutIdleFunc(onIdle)
-
+glutSpecialFunc(processSpecialKeys)
 #walking state global
 walking = 0
 
