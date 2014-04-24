@@ -641,7 +641,7 @@ class RagDoll():
         if self.handwave_state==1:
             self.initHandWavePos1()
             self.handwave_state=2
-            self.handwave_time_steps = 1000
+            self.handwave_time_steps = 800
         elif self.handwave_state==2:
             self.initHandWavePos2()
             self.handwave_state=3
@@ -1042,19 +1042,19 @@ class RagDoll():
         print "Ragdoll Started Waving Hand"
 
     def initHandWavePos1(ragdoll):
-        axis = ragdoll.getRelAxis(0,1.5,0.75)
+        axis = ragdoll.getRelAxis(0,1.5,0.25)
         ragdoll.rightUpperArm.final_tilt_direction = axis
         ragdoll.rightUpperArm.tilt = True
-        ragdoll.rightUpperArm.tilt_str = 30
+        ragdoll.rightUpperArm.tilt_str = 20
         ragdoll.rightUpperArm.tilt_time = 300
         axis = ragdoll.getRelAxis(3,0,1)
         ragdoll.rightForeArm.final_tilt_direction = axis
         ragdoll.rightForeArm.tilt = True
-        ragdoll.rightForeArm.tilt_str = 30
+        ragdoll.rightForeArm.tilt_str = 20
         ragdoll.rightForeArm.tilt_time = 300
 
     def initHandWavePos2(ragdoll):
-        axis = ragdoll.getRelAxis(0,1.5,0.75)
+        axis = ragdoll.getRelAxis(0,1.5,0.25)
         ragdoll.rightUpperArm.final_tilt_direction = axis
         ragdoll.rightUpperArm.tilt = True
         ragdoll.rightUpperArm.tilt_str = 20
@@ -1067,12 +1067,12 @@ class RagDoll():
 
 
     def initHandWavePos3(ragdoll):
-        axis = ragdoll.getRelAxis(0,1.5,0.75)
+        axis = ragdoll.getRelAxis(0,1.5,0.25)
         ragdoll.rightUpperArm.final_tilt_direction = axis
         ragdoll.rightUpperArm.tilt = True
         ragdoll.rightUpperArm.tilt_str = 2
         ragdoll.rightUpperArm.tilt_time = 3000
-        axis = ragdoll.getRelAxis(3,1,1)
+        axis = ragdoll.getRelAxis(3,1,0.5)
         ragdoll.rightForeArm.final_tilt_direction = axis
         ragdoll.rightForeArm.tilt = True
         ragdoll.rightForeArm.tilt_str = 2
@@ -1531,9 +1531,9 @@ geoms = []
 contactgroup = ode.JointGroup()
 
 # set the initial simulation loop parameters
-fps = 30
+fps = 60
 dt = 1.0 / fps
-stepsPerFrame = 15
+stepsPerFrame = 20
 SloMo = 1
 Paused = False
 lasttime = time.time()
@@ -1543,7 +1543,7 @@ numiter = 0
 ragdolls=[]
 ragdolls.append(RagDoll(world, space, 500, (0.0, 0.9, 0.0)))
 
-ragdolls.append(RagDoll(world, space, 500, (0.4, 0.9, 0.4)))
+#ragdolls.append(RagDoll(world, space, 500, (0.4, 0.9, 0.4)))
 #print "total mass is %.1f kg (%.1f lbs)" % (ragdoll2.totalMass,
 #    ragdoll.totalMass * 2.2)
 
