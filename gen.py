@@ -228,6 +228,11 @@ class RagDoll():
         self.kick_time_steps = 100
         self.kick_time_counter = 0
 
+        self.namaste_on = 0
+        self.namaste_state = 1
+        self.namaste_time_steps = 100
+        self.namaste_time_counter = 0
+        
         self.handwaving = 0
         self.handwave_state = 1
         self.handwave_time_steps = 100
@@ -645,8 +650,19 @@ class RagDoll():
             self.handwave_state=2
             self.handwave_time_steps = 200
 
-        elif self.handwave_state==4:
-            finishHandWave()
+    def namaste(self):
+        print "State - "+str(self.namaste_state)
+        if self.namaste_state==1:
+            initNamastePos1()
+            self.namaste_state=2
+            self.namaste_time_steps = 200
+        elif self.namaste_state==2:
+            initNamastePos2()
+            self.namaste_state=3
+            self.namaste_time_steps = 2500
+        elif self.namaste_state==3:
+            finishNamaste()
+
 
     def move_hand_to_stable_pos(self):
         pass
@@ -700,6 +716,12 @@ class RagDoll():
                 self.handwave()
                 self.handwave_time_counter = 0
             self.handwave_time_counter+=1
+        
+        if self.namaste_on == 1:
+            if self.namaste_time_counter==self.namaste_time_steps:
+                self.namaste()
+                self.namaste_time_counter = 0
+            self.namaste_time_counter+=1
 
         if self.kicking == 1:
             if self.kick_time_counter==self.kick_time_steps:
@@ -1100,6 +1122,8 @@ def relaxArms():
     ragdoll.rightForeArm.tilt = False
     ragdoll.leftUpperArm.tilt = False
     ragdoll.leftForeArm.tilt = False
+    ragdoll.leftHand.tilt = False
+    ragdoll.rightHand.tilt = False
 
 
 def finishPunch():
@@ -1108,7 +1132,7 @@ def finishPunch():
     ragdoll.leftLowerLeg.stabilizing_str = 100
     ragdoll.rightUpperLeg.stabilizing_str = 100
     ragdoll.rightLowerLeg.stabilizing_str = 100
-
+    ragdoll.restoring_torque = 40
     ragdoll.punching = 0
     ragdoll.punch_state=1
     print "Ragdoll Stopped Punching"
@@ -1208,7 +1232,77 @@ def finishHandWave():
     ragdoll.handwave_state=1
     print "Ragdoll Stopped Waving Hand"
 
+def initNamaste():
+    ragdoll.restoring_force = 1000
+    ragdoll.namaste_on = 1
+    ragdoll.namaste_state=1
+    print "Ragdoll Stopped Waving Hand"
 
+def initNamastePos1():
+    axis = getRelAxis(0,0.5,2)
+    ragdoll.rightUpperArm.final_tilt_direction = axis
+    ragdoll.rightUpperArm.tilt = True
+    ragdoll.rightUpperArm.tilt_str = 20
+    ragdoll.rightUpperArm.tilt_time = 300
+    axis = getRelAxis(0,-0.5,2)
+    ragdoll.rightForeArm.final_tilt_direction = axis
+    ragdoll.rightForeArm.tilt = True
+    ragdoll.rightForeArm.tilt_str = 20
+    ragdoll.rightForeArm.tilt_time = 300
+
+    axis = getRelAxis(0,-0.5,2)
+    ragdoll.leftUpperArm.final_tilt_direction = axis
+    ragdoll.leftUpperArm.tilt = True
+    ragdoll.leftUpperArm.tilt_str = 20
+    ragdoll.leftUpperArm.tilt_time = 300
+    axis = getRelAxis(0,0.5,2)
+    ragdoll.leftForeArm.final_tilt_direction = axis
+    ragdoll.leftForeArm.tilt = True
+    ragdoll.leftForeArm.tilt_str = 20
+    ragdoll.leftForeArm.tilt_time = 300
+
+def initNamastePos2():
+    axis = getRelAxis(0,1,1)
+    ragdoll.rightUpperArm.final_tilt_direction = axis
+    ragdoll.rightUpperArm.tilt = True
+    ragdoll.rightUpperArm.tilt_str = 30
+    ragdoll.rightUpperArm.tilt_time = 300
+    axis = getRelAxis(0,-3,1)
+    ragdoll.rightForeArm.final_tilt_direction = axis
+    ragdoll.rightForeArm.tilt = True
+    ragdoll.rightForeArm.tilt_str = 30
+    ragdoll.rightForeArm.tilt_time = 3000
+    # Hand
+    axis = getRelAxis(1,0,0)
+    ragdoll.rightHand.final_tilt_direction = axis
+    ragdoll.rightHand.tilt = True
+    ragdoll.rightHand.tilt_str = 5
+    ragdoll.rightHand.tilt_time = 3000
+
+    axis = getRelAxis(0,-1,1)
+    ragdoll.leftUpperArm.final_tilt_direction = axis
+    ragdoll.leftUpperArm.tilt = True
+    ragdoll.leftUpperArm.tilt_str = 30
+    ragdoll.leftUpperArm.tilt_time = 300
+    axis = getRelAxis(0,3,1)
+    ragdoll.leftForeArm.final_tilt_direction = axis
+    ragdoll.leftForeArm.tilt = True
+    ragdoll.leftForeArm.tilt_str = 30
+    ragdoll.leftForeArm.tilt_time = 3000
+    # Hand
+    axis = getRelAxis(1,0,0)
+    ragdoll.leftHand.final_tilt_direction = axis
+    ragdoll.leftHand.tilt = True
+    ragdoll.leftHand.tilt_str = 5
+    ragdoll.leftHand.tilt_time = 3000
+    
+def finishNamaste():
+    relaxArms()
+    ragdoll.restoring_force = 40
+    ragdoll.namaste_on = 0
+    ragdoll.namaste_state=1
+    print "Ragdoll Stopped Waving Hand"
+    
 
 def onKey(c, x, y):
     """GLUT keyboard callback."""
@@ -1247,6 +1341,8 @@ def onKey(c, x, y):
 
     elif c == 'w':
         initHandWave()
+    elif c == 'e':
+        finishHandWave()
 
     elif c == 'W':
         ragdoll.walking = 1
@@ -1307,6 +1403,8 @@ def onKey(c, x, y):
     elif c == 's':
         ragdoll.sitting = 1
         ragdoll.sit_state = 1
+    elif c == 'n':
+        initNamaste()
 
 def onDraw():
     """GLUT render callback."""
