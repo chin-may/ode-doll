@@ -213,6 +213,11 @@ class RagDoll():
         self.walking_force = 60
         self.walk_time_counter = 0
 
+        self.sitting = 0
+        self.sit_state = 0
+        self.sit_time_steps = 100
+        self.sit_time_counter = 0
+
         self.punching = 0
         self.punch_state = 1
         self.punch_time_steps = 100
@@ -539,6 +544,26 @@ class RagDoll():
         front_axis = cross(up_axis,right_axis)
         return front_axis
 
+    def sit(self):
+        print "State - "+str(self.sit_state)
+        if self.sit_state==1:
+            initSitBack()
+            self.sit_state = 2
+            self.sit_time_steps = 400
+        elif self.sit_state==2:
+            initSitFall()
+            self.sit_state = 3
+            self.sit_time_steps = 600
+        elif self.sit_state == 3:
+            initSitStand()
+            self.sit_state = 0
+            self.sit_time_steps = 600
+        elif self.sit_state == 0:
+            sitReset()
+            self.sitting = 0
+            self.sit_time_steps = 300
+
+
     def walk(self):
         print "State - "+str(self.walk_state)
         if self.walk_state==1:
@@ -657,6 +682,12 @@ class RagDoll():
             self.walk_time_counter+=1
             forward = self.getForwardAxis()
             self.bodies[1].addForce(mul3(forward,self.walking_force))
+
+        if self.sitting == 1:
+            if self.sit_time_counter == self.sit_time_steps:
+                self.sit_time_counter = 0
+                self.sit()
+            self.sit_time_counter+=1
 
         if self.punching == 1:
             if self.punch_time_counter==self.punch_time_steps:
@@ -900,6 +931,53 @@ def getRelPos(up_coeff,right_coeff,for_coeff):
     dest = reduce(add3,[mul3(up,up_coeff),mul3(right,right_coeff),mul3(forward,for_coeff),ppos])
     return dest
 
+
+
+def initSitBack():
+    ragdoll.rightUpperLeg.final_tilt_direction =\
+        add3(mul3(ragdoll.getForwardAxis(),2),ragdoll.getUpAxis())
+    ragdoll.rightUpperLeg.tilt_str = 100
+    ragdoll.rightUpperLeg.tilt_time = 20
+    ragdoll.rightUpperLeg.tilt = True
+
+    ragdoll.leftUpperLeg.final_tilt_direction =\
+        add3(mul3(ragdoll.getForwardAxis(),2),ragdoll.getUpAxis())
+    ragdoll.leftUpperLeg.tilt_str = 100
+    ragdoll.leftUpperLeg.tilt_time = 20
+    ragdoll.leftUpperLeg.tilt = True
+    ragdoll.rightUpperLeg.stabilize = False
+    ragdoll.leftUpperLeg.stabilize = False
+
+
+def initSitFall():
+#    ragdoll.rightUpperLeg.stabilize = False
+#    ragdoll.leftUpperLeg.stabilize = False
+    ragdoll.leftUpperLeg.tilt_str = 500
+    ragdoll.rightUpperLeg.tilt_str = 500
+    ragdoll.leftUpperLeg.tilt_time = 20
+    ragdoll.rightUpperLeg.tilt_time = 20
+    ragdoll.leftUpperLeg.final_tilt_direction =\
+        mul3(ragdoll.getForwardAxis(),1)
+    ragdoll.rightUpperLeg.final_tilt_direction =\
+        mul3(ragdoll.getForwardAxis(),1)
+
+
+def initSitStand():
+    ragdoll.rightUpperLeg.tilt_str = 90
+    ragdoll.rightUpperLeg.tilt_time = 20
+    ragdoll.leftUpperLeg.tilt_str = 90
+    ragdoll.leftUpperLeg.tilt_time = 20
+    ragdoll.leftUpperLeg.final_tilt_direction =\
+        add3(mul3(ragdoll.getForwardAxis(),0),mul3(ragdoll.getUpAxis(),-1))
+    ragdoll.rightUpperLeg.final_tilt_direction =\
+        add3(mul3(ragdoll.getForwardAxis(),0),mul3(ragdoll.getUpAxis(),-1))
+
+
+def sitReset():
+    ragdoll.rightUpperLeg.stabilize = True
+    ragdoll.leftUpperLeg.stabilize = True
+    ragdoll.rightUpperLeg.tilt = False
+    ragdoll.leftUpperLeg.tilt = False
 
 def initStandOnLeftLeg():
     """
@@ -1213,8 +1291,8 @@ def onKey(c, x, y):
     elif c=='l':
         ragdoll.kickass()
 
-    elif c == 's':
-        print 'Sitting down'
+    elif c == 'B':
+        print 'Made block'
         body, geom = createCube(world,space,100000,0.35)
         bodies.append(body)
         geoms.append(geom)
@@ -1225,6 +1303,10 @@ def onKey(c, x, y):
         body.setRotation(ragdoll.pelvis.getRotation())
     elif c == 'k':
         initKick()
+
+    elif c == 's':
+        ragdoll.sitting = 1
+        ragdoll.sit_state = 1
 
 def onDraw():
     """GLUT render callback."""
@@ -1314,6 +1396,7 @@ glutCreateWindow("PyODE Ragdoll Simulation")
 # create an ODE world object
 world = ode.World()
 world.setGravity((0.0, -9.81, 0.0))
+#world.setGravity((0.0, -0.00, 0.0))
 world.setERP(0.1)
 world.setCFM(1E-4)
 
