@@ -229,6 +229,16 @@ class RagDoll():
         self.kick_time_steps = 100
         self.kick_time_counter = 0
 
+        self.handshaking = 0
+        self.handshake_state = 1
+        self.handshake_time_steps = 100
+        self.handshake_time_counter = 0
+                
+        self.jumping = 0
+        self.jump_state = 1
+        self.jump_time_steps = 100
+        self.jump_time_counter = 0
+
         self.namaste_on = 0
         self.namaste_state = 1
         self.namaste_time_steps = 100
@@ -664,6 +674,31 @@ class RagDoll():
         elif self.namaste_state==3:
             self.finishNamaste()
 
+    def jump(self):
+        print "State - "+str(self.jump_state)
+        if self.jump_state==1:
+            self.initPrepareForJump()
+            self.jump_state=2
+            self.jump_time_steps = 600
+        elif self.jump_state==2:
+            self.jump_state=3
+            self.jump_time_steps = 25
+        elif self.jump_state==3:
+            self.finishJump()
+
+    def handshake(self):
+        print "State - "+str(self.jump_state)
+        if self.handshake_state==1:
+            self.initHandshakePos1()
+            self.handshake_state=2
+            self.handshake_time_steps = 200
+        elif self.handshake_state==2:
+            self.handshake_state=1
+            self.initHandshakePos2()
+            self.handshake_time_steps = 200
+            
+
+
 
     def move_hand_to_stable_pos(self):
         pass
@@ -717,6 +752,20 @@ class RagDoll():
                 self.handwave()
                 self.handwave_time_counter = 0
             self.handwave_time_counter+=1
+        
+        if self.jumping == 1:
+            if self.jump_time_counter==self.jump_time_steps:
+                self.jump_time_counter = 0
+                self.jump()
+            if self.jump_state==3:
+                self.initJumpInAir()
+            self.jump_time_counter+=1
+
+        if self.handshaking == 1:
+            if self.handshake_time_counter==self.handshake_time_steps:
+                self.handshake_time_counter = 0
+                self.handshake()
+            self.handshake_time_counter+=1
         
         if self.namaste_on == 1:
             if self.namaste_time_counter==self.namaste_time_steps:
@@ -1154,8 +1203,101 @@ class RagDoll():
         ragdoll.namaste_on = 0
         ragdoll.namaste_state=1
         print "Ragdoll Stopped Waving Hand"
+        
+    def initJump(ragdoll):
+        ragdoll.jumping = 1
+        ragdoll.jump_state=1
+        print "Ragdoll Started Jumping"
+        
+    def initPrepareForJump(ragdoll):
+        #ragdoll.rightUpperLeg.tilt = True
+        ragdoll.rightLowerLeg.tilt = True
+        ragdoll.rightUpperLeg.tilt_str = 100
+        ragdoll.rightLowerLeg.tilt_str = 100
+        ragdoll.rightUpperLeg.tilt_time = 100
+        ragdoll.rightLowerLeg.tilt_time = 100
+
+        #axis = ragdoll.getRelAxis(3,0.25,0.75)
+        #ragdoll.rightUpperLeg.tilt_direction = axis
+        #ragdoll.rightUpperLeg.final_tilt_direction = axis
+
+        axis = ragdoll.getRelAxis(-3,0,-1)
+        ragdoll.rightLowerLeg.tilt_direction = axis
+        ragdoll.rightLowerLeg.final_tilt_direction = axis
+        
+        #ragdoll.leftUpperLeg.tilt = True
+        ragdoll.leftLowerLeg.tilt = True
+        ragdoll.leftUpperLeg.tilt_str = 100
+        ragdoll.leftLowerLeg.tilt_str = 100
+        ragdoll.leftUpperLeg.tilt_time = 100
+        ragdoll.leftLowerLeg.tilt_time = 100
+
+        #axis = ragdoll.getRelAxis(3,-0.25,0.75)
+        #ragdoll.leftUpperLeg.tilt_direction = axis
+        #ragdoll.leftUpperLeg.final_tilt_direction = axis
+
+        axis = ragdoll.getRelAxis(-3,0,-1)
+        ragdoll.leftLowerLeg.tilt_direction = axis
+        ragdoll.leftLowerLeg.final_tilt_direction = axis
+        
+    def initJumpInAir(ragdoll):
+        ragdoll.pelvis.addForce(mul3((0,1,0),6000))
+
+    def finishJump(ragdoll):
+        ragdoll.leftLowerLeg.tilt = False
+        ragdoll.rightLowerLeg.tilt = False
+        ragdoll.jumping = 0
+        ragdoll.jump_state=1
+        print "Ragdoll Stopped Jumping"
 
 
+    def initHandshake(ragdoll):
+        ragdoll.handshaking = 1
+        ragdoll.handshake_state=1
+        print "Ragdoll Started Shaking Hands"
+        
+    def initHandshakePos1(ragdoll):
+        axis = ragdoll.getRelAxis(-3,0,2)
+        ragdoll.rightUpperArm.final_tilt_direction = axis
+        ragdoll.rightUpperArm.tilt = True
+        ragdoll.rightUpperArm.tilt_str = 10
+        ragdoll.rightUpperArm.tilt_time = 300
+        axis = ragdoll.getRelAxis(-0.2,-2,3)
+        ragdoll.rightForeArm.final_tilt_direction = axis
+        ragdoll.rightForeArm.tilt = True
+        ragdoll.rightForeArm.tilt_str = 50
+        ragdoll.rightForeArm.tilt_time = 3000
+        
+        axis = ragdoll.getRelAxis(1,-1,0)
+        ragdoll.rightHand.final_tilt_direction = axis
+        ragdoll.rightHand.tilt = True
+        ragdoll.rightHand.tilt_str = 5
+        ragdoll.rightHand.tilt_time = 3000
+    
+    def initHandshakePos2(ragdoll):
+        axis = ragdoll.getRelAxis(-3,0,2)
+        ragdoll.rightUpperArm.final_tilt_direction = axis
+        ragdoll.rightUpperArm.tilt = True
+        ragdoll.rightUpperArm.tilt_str = 10
+        ragdoll.rightUpperArm.tilt_time = 300
+        axis = ragdoll.getRelAxis(2,-2,3)
+        ragdoll.rightForeArm.final_tilt_direction = axis
+        ragdoll.rightForeArm.tilt = True
+        ragdoll.rightForeArm.tilt_str = 30
+        ragdoll.rightForeArm.tilt_time = 3000
+        
+        axis = ragdoll.getRelAxis(1,-1,0)
+        ragdoll.rightHand.final_tilt_direction = axis
+        ragdoll.rightHand.tilt = True
+        ragdoll.rightHand.tilt_str = 5
+        ragdoll.rightHand.tilt_time = 3000
+        
+    def finishHandshake(ragdoll):
+        ragdoll.relaxArms()
+        ragdoll.handshaking = 0
+        ragdoll.handshake_state=1
+        print "Ragdoll Stopped Shaking Hands"
+                
 def createCube(world,space,density,length):
     """Creates a cube body and corresponding geom."""
     body = ode.Body(world)
@@ -1349,6 +1491,14 @@ def onKey(c, x, y):
     elif c == 'm':
         ragdoll.rightHand.destination = ragdoll.getRelPos(0.5,0.5,0.5)
         ragdoll.rightHand.moving = True
+        
+    elif c == 'j':
+        ragdoll.initJump()
+
+    elif c == 't':
+        ragdoll.initHandshake()
+    elif c == 'T':
+        ragdoll.finishHandshake()
 
     elif c == 'h':
         ragdoll.initPunch()
