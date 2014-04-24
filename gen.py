@@ -729,7 +729,7 @@ class RagDoll():
                 self.kick()
                 self.kick_time_counter = 0
             self.kick_time_counter+=1
-            self.pelvis.addTorque((0,-8,0))
+            self.pelvis.addTorque((0,-3,0))
         THRESH = 0.0
         ANG_THRESH = 0
 
@@ -1168,6 +1168,18 @@ def createCube(world,space,density,length):
     geom.setBody(body)
     return body,geom
 
+def createBall(world,space,density,radius):
+    """Creates a spherical body and corresponding geom."""
+    body = ode.Body(world)
+    M = ode.Mass()
+    M.setSphere(density,radius)
+    body.setMass(M)
+    body.shape = 'sphere'
+    body.radius = radius
+    geom = ode.GeomSphere(space,radius)
+    geom.setBody(body)
+    return body,geom
+
 def createCapsule(world, space, density, length, radius,tag='def'):
     """Creates a capsule body and corresponding geom."""
 
@@ -1298,7 +1310,8 @@ def draw_body(body):
         glutSolidSphere(body.radius, CAPSULE_SLICES, CAPSULE_STACKS)
     elif body.shape == "cube":
         glutSolidCube(body.length)
-        pass
+    elif body.shape == "sphere":
+        glutSolidSphere(body.radius, CAPSULE_SLICES, CAPSULE_STACKS)
 
     glPopMatrix()
 
@@ -1399,6 +1412,12 @@ def onKey(c, x, y):
         body.setPosition(blockpos)
         body.setRotation(ragdoll.pelvis.getRotation())
     elif c == 'k':
+        body, geom = createBall(world,space,0.01,0.15)
+        lp = ragdoll.rightLowerLeg.getPosition()
+        body.setPosition(reduce(add3,[lp,mul3(ragdoll.getForwardAxis(),0.31),
+            mul3(ragdoll.getUpAxis(),-0.0),mul3(ragdoll.getRightAxis(),-0.11)]))
+        bodies.append(body)
+        geoms.append(geom)
         ragdoll.initKick()
 
     elif c == 's':
