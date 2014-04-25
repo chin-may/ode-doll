@@ -732,7 +732,8 @@ class RagDoll():
                 self.pelvis.setAngularVel((0,0,0))
             else:
                 self.pelvis.addForce(mul3(self.getUpAxis(),350))
-                self.pelvis.setAngularVel(mul3(self.getUpAxis(),3.5))
+                self.pelvis.setAngularVel(mul3(self.getUpAxis(),
+                    self.aboutturn_dir*3.5))
             self.pelvis.setLinearVel((0,0,0))
 
 
@@ -1553,9 +1554,17 @@ def onKey(c, x, y):
         ragdoll = ragdolls[curr_ragdoll]
     elif c == 'x':
         ragdoll.aboutturn_state = 1
+        ragdoll.aboutturn_dir = 1
         ragdoll.turningabout = True
         ragdoll.aboutturn_time_steps = 1550
     elif c == 'X':
+        ragdoll.aboutturn_time_counter = ragdoll.aboutturn_time_steps-3
+    elif c == 'y':
+        ragdoll.aboutturn_state = 1
+        ragdoll.aboutturn_dir = -1
+        ragdoll.turningabout = True
+        ragdoll.aboutturn_time_steps = 1550
+    elif c == 'Y':
         ragdoll.aboutturn_time_counter = ragdoll.aboutturn_time_steps-3
     elif c == ';':
         ragdoll.pelvis.addForce(mul3(ragdoll.getUpAxis(),3000))
