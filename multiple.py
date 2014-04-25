@@ -198,7 +198,8 @@ R_TOES_POS = add3(R_ANKLE_POS, (0.0, 0.0, FOOT_LEN))
 L_TOES_POS = add3(L_ANKLE_POS, (0.0, 0.0, FOOT_LEN))
 
 class RagDoll():
-    def __init__(self, world, space, density, offset = (0.0, 0.0, 0.0)):
+    def __init__(self, world, space, density, offset = (0.0, 0.0, 0.0),
+            shirt=(1,0,0)):
         """Creates a ragdoll of standard size at the given offset."""
 
         self.world = world
@@ -244,7 +245,7 @@ class RagDoll():
         self.namaste_state = 1
         self.namaste_time_steps = 100
         self.namaste_time_counter = 0
-        
+
         self.handwaving = 0
         self.handwave_state = 1
         self.handwave_time_steps = 100
@@ -253,34 +254,39 @@ class RagDoll():
         self.offset = offset
         self.restoring_torque = 40
 
+        skin = (0.8,0.6,0.3)
+        #shirt = (1,0,0)
+        pants = (0.8,0.8,0.8)
+
         self.chest = self.addBody((-CHEST_W * 0.5, CHEST_H, 0.0),
-            (CHEST_W * 0.5, CHEST_H, 0.0), 0.13)
+            (CHEST_W * 0.5, CHEST_H, 0.0), 0.13,shirt)
         self.belly = self.addBody((0.0, CHEST_H - 0.1, 0.0),
-            (0.0, HIP_H + 0.1, 0.0), 0.125)
+            (0.0, HIP_H + 0.1, 0.0), 0.125,shirt)
         self.midSpine = self.addFixedJoint(self.chest, self.belly)
         self.pelvis = self.addBody((-PELVIS_W * 0.5, HIP_H, 0.0),
-            (PELVIS_W * 0.5, HIP_H, 0.0), 0.125)
+            (PELVIS_W * 0.5, HIP_H, 0.0), 0.125,pants)
         self.lowSpine = self.addFixedJoint(self.belly, self.pelvis)
 
-        self.head = self.addBody((0.0, BROW_H, 0.0), (0.0, MOUTH_H, 0.0), 0.11)
+        self.head = self.addBody((0.0, BROW_H, 0.0), (0.0, MOUTH_H, 0.0),
+                0.11,skin)
         #self.neck = self.addBallJoint(self.chest, self.head,
             #(0.0, NECK_H, 0.0), (0.0, -1.0, 0.0), (0.0, 0.0, 1.0), pi * 0.25,
             #pi * 0.25, 80.0, 40.0)
         self.neck  = self.addFixedJoint(self.chest, self.head)
 
-        self.rightUpperLeg = self.addBody(R_HIP_POS, R_KNEE_POS, 0.11)
+        self.rightUpperLeg = self.addBody(R_HIP_POS, R_KNEE_POS, 0.11,pants)
         self.rightHip = self.addUniversalJoint(self.pelvis, self.rightUpperLeg,
             R_HIP_POS, bkwdAxis, rightAxis, -0.1 * pi, 0.3 * pi, -0.15 * pi,
             0.75 * pi)
-        self.leftUpperLeg = self.addBody(L_HIP_POS, L_KNEE_POS, 0.11)
+        self.leftUpperLeg = self.addBody(L_HIP_POS, L_KNEE_POS, 0.11,pants)
         self.leftHip = self.addUniversalJoint(self.pelvis, self.leftUpperLeg,
             L_HIP_POS, fwdAxis, rightAxis, -0.1 * pi, 0.3 * pi, -0.15 * pi,
             0.75 * pi)
 
-        self.rightLowerLeg = self.addBody(R_KNEE_POS, R_ANKLE_POS, 0.09)
+        self.rightLowerLeg = self.addBody(R_KNEE_POS, R_ANKLE_POS, 0.09,skin)
         self.rightKnee = self.addHingeJoint(self.rightUpperLeg,
             self.rightLowerLeg, R_KNEE_POS, leftAxis, 0.0, pi * 0.75)
-        self.leftLowerLeg = self.addBody(L_KNEE_POS, L_ANKLE_POS, 0.09)
+        self.leftLowerLeg = self.addBody(L_KNEE_POS, L_ANKLE_POS, 0.09,skin)
         self.leftKnee = self.addHingeJoint(self.leftUpperLeg,
             self.leftLowerLeg, L_KNEE_POS, leftAxis, 0.0, pi * 0.75)
 
@@ -293,27 +299,29 @@ class RagDoll():
         #self.leftAnkle = self.addHingeJoint(self.leftLowerLeg,
             #self.leftFoot, L_ANKLE_POS, rightAxis, -0.1 * pi, 0.05 * pi)
 
-        self.rightUpperArm = self.addBody(R_SHOULDER_POS, R_ELBOW_POS, 0.08)
+        self.rightUpperArm = self.addBody(R_SHOULDER_POS, R_ELBOW_POS,
+                0.08,shirt)
         self.rightShoulder = self.addBallJoint(self.chest, self.rightUpperArm,
             R_SHOULDER_POS, norm3((-1.0, -1.0, 4.0)), (0.0, 0.0, 1.0), pi * 0.5,
             pi * 0.25, 150.0, 100.0)
-        self.leftUpperArm = self.addBody(L_SHOULDER_POS, L_ELBOW_POS, 0.08)
+        self.leftUpperArm = self.addBody(L_SHOULDER_POS, L_ELBOW_POS,
+                0.08,shirt)
         self.leftShoulder = self.addBallJoint(self.chest, self.leftUpperArm,
             L_SHOULDER_POS, norm3((1.0, -1.0, 4.0)), (0.0, 0.0, 1.0), pi * 0.5,
             pi * 0.25, 150.0, 100.0)
 
-        self.rightForeArm = self.addBody(R_ELBOW_POS, R_WRIST_POS, 0.075)
+        self.rightForeArm = self.addBody(R_ELBOW_POS, R_WRIST_POS, 0.075,skin)
         self.rightElbow = self.addHingeJoint(self.rightUpperArm,
             self.rightForeArm, R_ELBOW_POS, downAxis, 0.0, 0.6 * pi)
-        self.leftForeArm = self.addBody(L_ELBOW_POS, L_WRIST_POS, 0.075)
+        self.leftForeArm = self.addBody(L_ELBOW_POS, L_WRIST_POS, 0.075,skin)
         self.leftElbow = self.addHingeJoint(self.leftUpperArm,
             self.leftForeArm, L_ELBOW_POS, upAxis, 0.0, 0.6 * pi)
 
-        self.rightHand = self.addBody(R_WRIST_POS, R_FINGERS_POS, 0.075)
+        self.rightHand = self.addBody(R_WRIST_POS, R_FINGERS_POS, 0.075,skin)
         self.rightHand.moving = False
         self.rightWrist = self.addHingeJoint(self.rightForeArm,
             self.rightHand, R_WRIST_POS, fwdAxis, -0.1 * pi, 0.2 * pi)
-        self.leftHand = self.addBody(L_WRIST_POS, L_FINGERS_POS, 0.075)
+        self.leftHand = self.addBody(L_WRIST_POS, L_FINGERS_POS, 0.075,skin)
         self.leftWrist = self.addHingeJoint(self.leftForeArm,
             self.leftHand, L_WRIST_POS, bkwdAxis, -0.1 * pi, 0.2 * pi)
 
@@ -359,7 +367,7 @@ class RagDoll():
         self.leftForeArm.tilt_time = 1000
 
 
-    def addBody(self, p1, p2, radius):
+    def addBody(self, p1, p2, radius,color=(0.8,0.8,0.8)):
         """
         Adds a capsule body between joint positions p1 and p2 and with given
         radius to the ragdoll.
@@ -373,7 +381,7 @@ class RagDoll():
         cyllen = dist3(p1, p2) - radius
 
         body = ode.Body(self.world)
-        body.tag = 'ragdoll'
+        body.color = color
         m = ode.Mass()
         m.setCylinder(self.density, 3, radius, cyllen)
         body.setMass(m)
@@ -1281,9 +1289,10 @@ class RagDoll():
 
 world_mu = 500
 
-def createCube(world,space,density,length):
+def createCube(world,space,density,length,color=(0.8,0.8,0.8)):
     """Creates a cube body and corresponding geom."""
     body = ode.Body(world)
+    body.color = color
     M = ode.Mass()
     M.setBox(density,length,length,length)
     body.setMass(M)
@@ -1293,13 +1302,14 @@ def createCube(world,space,density,length):
     geom.setBody(body)
     return body,geom
 
-def createCapsule(world, space, density, length, radius,tag='def'):
+def createCapsule(world, space, density, length, radius,color=(0.8,0.8,0.8)):
     """Creates a capsule body and corresponding geom."""
 
     # create capsule body (aligned along the z-axis so that it matches the
     #   GeomCCylinder created below, which is aligned along the z-axis by
     #   default)
     body = ode.Body(world)
+    body.color = color
     M = ode.Mass()
     M.setCylinder(density, 3, radius, length)
     body.setMass(M)
@@ -1308,7 +1318,6 @@ def createCapsule(world, space, density, length, radius,tag='def'):
     body.shape = "capsule"
     body.length = length
     body.radius = radius
-    body.tag = tag
 
     # create a capsule geom for collision detection
     geom = ode.GeomCCylinder(space, radius, length)
@@ -1406,6 +1415,7 @@ def draw_body(body):
     rot = makeOpenGLMatrix(body.getRotation(), body.getPosition())
     glPushMatrix()
     glMultMatrixd(rot)
+    glColor3f(body.color[0],body.color[1],body.color[2])
     if body.shape == "capsule":
         cylHalfHeight = body.length / 2.0
         glBegin(GL_QUAD_STRIP)
@@ -1448,7 +1458,6 @@ def onKey(c, x, y):
     elif c == 'b':
         print ragdoll.belly.stabilizing_str
         obstacle, obsgeom = createCapsule(world, space, 1000, 0.05, 0.15)
-        obstacle.tag = 'dropped'
         diff = (random.uniform(-1, 1), 0, random.uniform(-1, 1))
         target = ragdoll.chest.getPosition()
         pos = add3(target,diff)
@@ -1711,7 +1720,7 @@ numiter = 0
 # create the ragdoll
 ragdolls=[]
 
-ragdolls.append(RagDoll(world, space, 500, (-0.3, 0.9, 0.0)))
+ragdolls.append(RagDoll(world, space, 500, (-0.3, 0.9, 0.0),(0,0,1)))
 
 ragdolls.append(RagDoll(world, space, 500, (0.9, 0.9, 0.0)))
 #ragdolls.append(RagDoll(world, space, 500, (-0.3, 0.9, 0.0)))
