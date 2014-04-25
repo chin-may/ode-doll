@@ -1230,6 +1230,8 @@ class RagDoll():
     def initHandshake(ragdoll):
         ragdoll.handshaking = 1
         ragdoll.handshake_state=1
+        global world_mu
+        world_mu=2000
         print "Ragdoll Started Shaking Hands"
 
     def initHandshakePos1(ragdoll):
@@ -1272,8 +1274,11 @@ class RagDoll():
         ragdoll.relaxArms()
         ragdoll.handshaking = 0
         ragdoll.handshake_state=1
+        global world_mu
+        world_mu=500
         print "Ragdoll Stopped Shaking Hands"
 
+world_mu = 500
 
 def createCube(world,space,density,length):
     """Creates a cube body and corresponding geom."""
@@ -1328,7 +1333,7 @@ def near_callback(args, geom1, geom2):
     world, contactgroup = args
     for c in contacts:
         c.setBounce(0.2)
-        c.setMu(500) # 0-5 = very slippery, 50-500 = normal, 5000 = very sticky
+        c.setMu(world_mu) # 0-5 = very slippery, 50-500 = normal, 5000 = very sticky
         j = ode.ContactJoint(world, contactgroup, c)
         j.attach(geom1.getBody(), geom2.getBody())
     b1= geom1.getBody()
@@ -1571,7 +1576,14 @@ def onKey(c, x, y):
     elif c == 'T':
         ragdolls[0].finishHandshake()
         ragdolls[1].finishHandshake()
+        
+    elif c == 'g':
+        global world_mu
+        world_mu = 2000
 
+    elif c == 'G':
+        global world_mu
+        world_mu = 500
 
 def onDraw():
     """GLUT render callback."""
