@@ -33,3 +33,15 @@ Arrows  Move Camera
 
 g       Set Global Friction To 2000 (Do before handshake)
 G       Set Global Friction Back to 500
+
+
+While punching,
+    hands in front
+    punch on front side of enemy
+
+While handshake,
+    Increase friction on drop
+    Reduce after
+
+Before kicking press 'a'
+
