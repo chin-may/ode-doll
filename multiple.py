@@ -1595,7 +1595,7 @@ def onKey(c, x, y):
     elif c == 'T':
         ragdolls[0].finishHandshake()
         ragdolls[1].finishHandshake()
-        
+
     elif c == 'g':
         global world_mu
         world_mu = 2000
@@ -1603,6 +1603,25 @@ def onKey(c, x, y):
     elif c == 'G':
         global world_mu
         world_mu = 500
+
+    elif c == '[':
+        ang = 0.015
+        dvec = sub3(eye,look_obj)
+        cang = math.cos(ang)
+        sang = math.sin(ang)
+        rotmat = [cang,0,-sang,0,1,0,sang,0,cang]
+        tmp_eye = add3(look_obj,rotate3(rotmat,dvec))
+        for i in xrange(3):
+            eye[i]=tmp_eye[i]
+    elif c == ']':
+        ang = -0.015
+        dvec = sub3(eye,look_obj)
+        cang = math.cos(ang)
+        sang = math.sin(ang)
+        rotmat = [cang,0,-sang,0,1,0,sang,0,cang]
+        tmp_eye = add3(look_obj,rotate3(rotmat,dvec))
+        for i in xrange(3):
+            eye[i]=tmp_eye[i]
 
 def onDraw():
     """GLUT render callback."""
