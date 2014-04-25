@@ -639,7 +639,11 @@ class RagDoll():
             self.punch_state = 4
             self.punch_time_steps = 50
         elif self.punch_state==4:
+            self.punch_state = 5
+            self.punch_time_steps = 50
             self.finishPunch()
+        elif self.punch_state==5:
+            self.finishPunchRelease()
 
     def kick(self):
         print "State - "+str(self.kick_state)
@@ -985,6 +989,10 @@ class RagDoll():
 
     def initPunchRaiseArm(ragdoll):
         print "Raising Arm"
+        joint = ode.FixedJoint(world)
+        joint.attach(ragdoll.chest,None)
+        joint.setFixed()
+        ragdoll.chest.fix = joint
         axis = ragdoll.getRelAxis(0,3,-1)
         ragdoll.rightUpperArm.tilt_str = 30
         ragdoll.rightUpperArm.final_tilt_direction = axis
@@ -1012,11 +1020,12 @@ class RagDoll():
     def initPunchExtendArm(ragdoll):
         print "Extending Arm"
         axis = ragdoll.getRelAxis(0,0,3)
-        ragdoll.rightUpperArm.tilt_str = 40
+        other_doll.belly.stabilizing_str = 10
+        ragdoll.rightUpperArm.tilt_str = 60
         ragdoll.rightUpperArm.final_tilt_direction = axis
         ragdoll.rightUpperArm.tilt_time = 100
         ragdoll.rightUpperArm.tilt = True
-        ragdoll.rightForeArm.tilt_str = 40
+        ragdoll.rightForeArm.tilt_str = 60
         ragdoll.rightForeArm.tilt_time = 100
         axis = ragdoll.getRelAxis(0,-1,3)
         ragdoll.rightForeArm.final_tilt_direction = axis
@@ -1035,16 +1044,21 @@ class RagDoll():
         ragdoll.leftHand.tilt = False
         ragdoll.rightHand.tilt = False
 
+    def finishPunchRelease(ragdoll):
+        ragdoll.punching = 0
+        ragdoll.punch_state=1
+        ragdoll.chest.fix.attach(None,None)
+        print "Punch stabilized"
+
 
     def finishPunch(ragdoll):
+        other_doll.belly.stabilizing_str = 150
         ragdoll.relaxArms()
         ragdoll.leftUpperLeg.stabilizing_str = 100
         ragdoll.leftLowerLeg.stabilizing_str = 100
         ragdoll.rightUpperLeg.stabilizing_str = 100
         ragdoll.rightLowerLeg.stabilizing_str = 100
         ragdoll.restoring_torque = 40
-        ragdoll.punching = 0
-        ragdoll.punch_state=1
         print "Ragdoll Stopped Punching"
 
 
@@ -1426,6 +1440,7 @@ def onKey(c, x, y):
         sys.exit(0)
 
     elif c == 'b':
+        print ragdoll.belly.stabilizing_str
         obstacle, obsgeom = createCapsule(world, space, 1000, 0.05, 0.15)
         obstacle.tag = 'dropped'
         diff = (random.uniform(-1, 1), 0, random.uniform(-1, 1))
@@ -1529,6 +1544,7 @@ def onKey(c, x, y):
             look_obj[i]=tmp_look_obj[i]
     elif c == '2':
         curr_ragdoll = (curr_ragdoll+1)%len(ragdolls)
+        other_doll = ragdoll
         ragdoll = ragdolls[curr_ragdoll]
     elif c == 'x':
         ragdoll.aboutturn_state = 1
@@ -1539,6 +1555,15 @@ def onKey(c, x, y):
     elif c == ';':
         ragdoll.pelvis.addForce(mul3(ragdoll.getUpAxis(),3000))
         ragdoll.pelvis.addForce(mul3(ragdoll.getForwardAxis(),10000))
+    elif c == ':':
+        ragdoll.pelvis.addForce(mul3(ragdoll.getUpAxis(),3000))
+        ragdoll.pelvis.addForce(mul3(ragdoll.getForwardAxis(),-10000))
+    elif c == "'":
+        ragdoll.pelvis.addForce(mul3(ragdoll.getUpAxis(),3000))
+        ragdoll.pelvis.addForce(mul3(ragdoll.getRightAxis(),10000))
+    elif c == '"':
+        ragdoll.pelvis.addForce(mul3(ragdoll.getUpAxis(),3000))
+        ragdoll.pelvis.addForce(mul3(ragdoll.getRightAxis(),-10000))
 
     elif c == 't':
         ragdolls[0].initHandshake()
@@ -1675,6 +1700,7 @@ ragdolls.append(RagDoll(world, space, 500, (0.9, 0.9, 0.0)))
 
 curr_ragdoll = 0
 ragdoll = ragdolls[0]
+other_doll = ragdolls[1]
 
 # create an obstacle
 #obstacle, obsgeom = createCapsule(world, space, 1000, 0.05, 0.15)
