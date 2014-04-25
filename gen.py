@@ -694,7 +694,7 @@ class RagDoll():
             self.finishJump()
 
     def handshake(self):
-        print "State - "+str(self.jump_state)
+        print "State - "+str(self.handshake_state)
         if self.handshake_state==1:
             self.initHandshakePos1()
             self.handshake_state=2
