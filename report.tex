@@ -24,6 +24,8 @@ other constraints. It is just a ragdoll ie it cannot exert any force or
 perform actions. It can only be dropped from a height and falls down as shown
 below.
 
+\center{\includegraphics[scale=0.4]{ragdoll}}
+
 \section{Human Action Simulation}
 We have made a realistic humanoid body that can not only stand up,
 but can perform various actions. \\
@@ -47,8 +49,9 @@ pay special attention to smooth transitions between positions. eg. for raising
 a leg while kicking, one first transfers his weight onto one leg, and the 
 smoothly tilts the other leg backward followed smooth harder motion forward.
 Each of these - smooth transitions, shifting weight - requires careful
-distribution of forces and torque on the body.
-%TODO kick
+distribution of forces and torque on the body.\\
+\center{\includegraphics[scale=0.4]{kick}}
+\center{\includegraphics[scale=0.4]{wave}}
 
 
 \section{Human Interaction Simulation}
@@ -59,7 +62,7 @@ We have implemented the following interactions between two humans:\\
     \item Humans punching each other
     \item Handshaking
 \end{itemize}
-%TODO pic
+\center{\includegraphics[scale=0.4]{handshake}}
 
 
 \section{Conclusions}
