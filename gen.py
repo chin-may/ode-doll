@@ -1501,7 +1501,9 @@ def onKey(c, x, y):
     elif c == 'm':
         ragdoll.rightHand.destination = ragdoll.getRelPos(0.5,0.5,0.5)
         ragdoll.rightHand.moving = True
-        
+    elif c == 'M':
+        ragdoll.rightHand.moving = False
+
     elif c == 'j':
         ragdoll.initJump()
 
