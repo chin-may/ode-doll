@@ -1,2 +1,35 @@
-Ctrl+W to Start Walking
-Ctrl+Z to Stop Walking
+m       Grab (Move hand to specific location)
+h       Punch
+w       Start Handwave
+e       Stop Handwave
+W       Start Walking
+Z       Stop Walking
+B       Make Block (For Sitting)
+k       kick
+s       Sit
+n       Namaste
+t       Start Handshake
+T       Stop Handshake       
+
+
+
+2       Switch doll which we are controlling
+x       Start turning counterclockwise looking from top down - Turns 180
+X       Stop turning counterclockwise looking from top down
+;       Move Forward  
+l       kickass
+b       Hit Body with ball
+a       Get arms to good position
+c       relax arms
+    
+
+p/P     Pause
+q/Q     quit
++       Camera Zoom in
+-       Camera zoom out
+Arrows  Move Camera    
+
+
+
+g       Set Global Friction To 2000 (Do before handshake)
+G       Set Global Friction Back to 500
