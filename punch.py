@@ -224,6 +224,7 @@ class RagDoll():
         self.aboutturn_time_counter = 0
         self.turningabout = False
 
+
         self.punching = 0
         self.punch_state = 1
         self.punch_time_steps = 100
@@ -729,6 +730,7 @@ class RagDoll():
                 self.pelvis.addForce(mul3(self.getUpAxis(),350))
                 self.pelvis.setAngularVel(mul3(self.getUpAxis(),3.5))
             self.pelvis.setLinearVel((0,0,0))
+
 
 
         if self.rightHand.moving:
@@ -1528,12 +1530,16 @@ def onKey(c, x, y):
     elif c == '2':
         curr_ragdoll = (curr_ragdoll+1)%len(ragdolls)
         ragdoll = ragdolls[curr_ragdoll]
-    elif c == 'A':
+    elif c == 'x':
         ragdoll.aboutturn_state = 1
         ragdoll.turningabout = True
         ragdoll.aboutturn_time_steps = 1550
-    elif c == 'x':
+    elif c == 'X':
         ragdoll.aboutturn_time_counter = ragdoll.aboutturn_time_steps-3
+    elif c == ';':
+        ragdoll.pelvis.addForce(mul3(ragdoll.getUpAxis(),3000))
+        ragdoll.pelvis.addForce(mul3(ragdoll.getForwardAxis(),10000))
+
     elif c == 't':
         ragdolls[0].initHandshake()
         ragdolls[1].initHandshake()
