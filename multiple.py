@@ -1021,7 +1021,7 @@ class RagDoll():
     def initPunchExtendArm(ragdoll):
         print "Extending Arm"
         axis = ragdoll.getRelAxis(0,0,3)
-        other_doll.belly.stabilizing_str = 10
+        ragdoll.enemy.belly.stabilizing_str = 10
         ragdoll.rightUpperArm.tilt_str = 60
         ragdoll.rightUpperArm.final_tilt_direction = axis
         ragdoll.rightUpperArm.tilt_time = 100
@@ -1053,7 +1053,7 @@ class RagDoll():
 
 
     def finishPunch(ragdoll):
-        other_doll.belly.stabilizing_str = 150
+        ragdoll.enemy.belly.stabilizing_str = 150
         ragdoll.relaxArms()
         ragdoll.leftUpperLeg.stabilizing_str = 100
         ragdoll.leftLowerLeg.stabilizing_str = 100
@@ -1433,7 +1433,7 @@ def draw_body(body):
 def onKey(c, x, y):
     """GLUT keyboard callback."""
 
-    global SloMo, Paused,ragdoll,curr_ragdoll
+    global SloMo, Paused,ragdoll,curr_ragdoll,other_doll
 
     # set simulation speed
 #    if c >= '0' and c <= '9':
@@ -1464,6 +1464,7 @@ def onKey(c, x, y):
         ragdoll.rightHand.moving = True
 
     elif c == 'h':
+        ragdoll.enemy = other_doll
         ragdoll.initPunch()
 
     elif c == 'w':
@@ -1701,7 +1702,7 @@ contactgroup = ode.JointGroup()
 # set the initial simulation loop parameters
 fps = 30
 dt = 1.0 / fps
-stepsPerFrame = 15
+stepsPerFrame = 20
 SloMo = 1
 Paused = False
 lasttime = time.time()
