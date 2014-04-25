@@ -1,0 +1,70 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+
+\author{Group 2 \\Chinmay Bapat (CS10B059)\\ Dhanvin Mehta (CS10B035)}
+\title{Simulating interactions using Open Dynamics Engine}
+\begin{document}
+\maketitle
+\section{Introduction}
+The Open Dynamics Engine (ODE) is a physics engine. It's two main components
+are a rigid body dynamics simulation engine and a collision detection engine.
+It has various joint types and collision detection with friction. Each joint
+specifies certain constraints. eg. a hinge joint can move about only one
+axis of rotation.\\
+The world is defined by bodies and certain constants like gravity.
+Each iteration of the main loop of ODE engine simulates the physics of these
+bodies in the world defined for a fixed time step. By controlling the number
+of time steps per frame and the number of frames per second we can control
+the sensitivity of the world.
+
+\section{Base code used}
+We used ragdoll code from a tutorial to start with. This has the basic
+structure and dimensions of the human body but lacks specialized joints and
+other constraints. It is just a ragdoll ie it cannot exert any force or 
+perform actions. It can only be dropped from a height and falls down as shown
+below.
+
+\section{Human Action Simulation}
+We have made a realistic humanoid body that can not only stand up,
+but can perform various actions. \\
+We have implemented the following:\\
+\begin{itemize}
+    \item Standing stably
+    \item Stabilising after being hit by a ball
+    \item Walking
+    \item Hand Waving
+    \item Jumping
+    \item Sitting on a block
+    \item Kicking a ball
+    \item Namaste action
+\end{itemize}
+
+These tasks involved putting constraints on the joints for realistic behaviour.
+We had to use  \textbf{Finite State Machines} to control the application for
+forces for different sections of each action.\\
+Apart from this we had to create basic stabilising forces for the body and
+pay special attention to smooth transitions between positions. eg. for raising
+a leg while kicking, one first transfers his weight onto one leg, and the 
+smoothly tilts the other leg backward followed smooth harder motion forward.
+Each of these - smooth transitions, shifting weight - requires careful
+distribution of forces and torque on the body.
+%TODO kick
+
+
+\section{Human Interaction Simulation}
+Interactions between two humans pose additional problems of synchronisation
+and additional constraints on the forces one human can apply on the other.
+We have implemented the following interactions between two humans:\\
+\begin{itemize}
+    \item Humans punching each other
+    \item Handshaking
+\end{itemize}
+%TODO pic
+
+
+\section{Conclusions}
+Working with the Open Dynamics Engine made us appreciate the complicated
+physics underlying simple human actions. It also helped us realize the 
+idea of using Finite State Machines to implement a series of actions.
+
+\end{document}
