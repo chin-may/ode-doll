@@ -1741,8 +1741,8 @@ glutSpecialFunc(processSpecialKeys)
 #walking state global
 walking = 0
 #Camera position globals
-eye = [2.5,10.0,10.0]
-look_obj = [0.5,1.0,0.0]
+eye = [1.5,6.0,6.0]
+look_obj = [0.0,1.0,0.0]
 look_up = [0,1,0]
 
 # enter the GLUT event loop

@@ -569,15 +569,16 @@ class RagDoll():
 
     def sit(self):
         print "State - "+str(self.sit_state)
+#        if self.sit_state==1:
+#            self.initSitBack()
+#            self.sit_state = 2
+#            self.sit_time_steps = 400
         if self.sit_state==1:
             self.initSitBack()
-            self.sit_state = 2
-            self.sit_time_steps = 400
-        elif self.sit_state==2:
             self.initSitFall()
-            self.sit_state = 3
-            self.sit_time_steps = 600
-        elif self.sit_state == 3:
+            self.sit_state = 2
+            self.sit_time_steps = 1200
+        elif self.sit_state == 2:
             self.initSitStand()
             self.sit_state = 0
             self.sit_time_steps = 600
@@ -882,10 +883,10 @@ class RagDoll():
     def initSitFall(ragdoll):
 #    ragdoll.rightUpperLeg.stabilize = False
 #    ragdoll.leftUpperLeg.stabilize = False
-        ragdoll.leftUpperLeg.tilt_str = 500
-        ragdoll.rightUpperLeg.tilt_str = 500
-        ragdoll.leftUpperLeg.tilt_time = 20
-        ragdoll.rightUpperLeg.tilt_time = 20
+        ragdoll.leftUpperLeg.tilt_str = 60
+        ragdoll.rightUpperLeg.tilt_str = 60
+        ragdoll.leftUpperLeg.tilt_time = 1000
+        ragdoll.rightUpperLeg.tilt_time = 1000
         ragdoll.leftUpperLeg.final_tilt_direction =\
             mul3(ragdoll.getForwardAxis(),1)
         ragdoll.rightUpperLeg.final_tilt_direction =\
@@ -893,10 +894,10 @@ class RagDoll():
 
 
     def initSitStand(ragdoll):
-        ragdoll.rightUpperLeg.tilt_str = 90
-        ragdoll.rightUpperLeg.tilt_time = 20
-        ragdoll.leftUpperLeg.tilt_str = 90
-        ragdoll.leftUpperLeg.tilt_time = 20
+        ragdoll.rightUpperLeg.tilt_str = 30
+        ragdoll.rightUpperLeg.tilt_time = 1000
+        ragdoll.leftUpperLeg.tilt_str = 30
+        ragdoll.leftUpperLeg.tilt_time = 1000
         ragdoll.leftUpperLeg.final_tilt_direction =\
             add3(mul3(ragdoll.getForwardAxis(),0),mul3(ragdoll.getUpAxis(),-1))
         ragdoll.rightUpperLeg.final_tilt_direction =\
@@ -1562,7 +1563,7 @@ def onKey(c, x, y):
 
     elif c == 'B':
         print 'Made block'
-        body, geom = createCube(world,space,100000,0.35)
+        body, geom = createCube(world,space,100000,0.45)
         bodies.append(body)
         geoms.append(geom)
         rp = ragdoll.pelvis.getPosition()
@@ -1752,8 +1753,8 @@ glutSpecialFunc(processSpecialKeys)
 #walking state global
 walking = 0
 #Camera position globals
-eye = [2.5,10.0,10.0]
-look_obj = [0.5,1.0,0.0]
+eye = [1.5,6.0,6.0]
+look_obj = [0.0,1.0,0.0]
 look_up = [0,1,0]
 
 # enter the GLUT event loop
